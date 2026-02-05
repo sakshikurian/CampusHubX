@@ -1,5 +1,6 @@
 <?php
 // Start the session to manage user login state
+
 session_start();
 
 // Check if the user is already logged in (optional but good practice)
@@ -62,7 +63,7 @@ $conn->close();
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f3dfe1ff;
+            background-color: #cfe2f3;
         }
     </style>
 </head>
