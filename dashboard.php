@@ -61,7 +61,7 @@ $userName = $_SESSION['user_name'];
         <div class="row justify-content-center">
             <!-- Book Sharing -->
             <div class="col-md-4 mb-4">
-                <a href="booksharing/view_books.php" class="text-decoration-none">
+                <a href="booksharing/index.php" class="text-decoration-none">
                     <div class="card text-center shadow h-100 border-primary">
                         <div class="card-body">
                             <div class="card-icon text-primary"><i class="fas fa-book-open"></i></div>
@@ -74,27 +74,40 @@ $userName = $_SESSION['user_name'];
 
             <!-- Canteen Coupons -->
             <div class="col-md-4 mb-4">
-                <div class="card text-center shadow h-100 border-secondary opacity-50">
-                    <div class="card-body">
-                        <div class="card-icon text-secondary"><i class="fas fa-utensils"></i></div>
-                        <h5 class="card-title text-dark fw-bold">🍴 Canteen Coupons</h5>
-                        <p class="card-text text-muted">Order food digitally (Coming Soon)</p>
+                <a href="canteen/index.php" class="text-decoration-none">
+                    <div class="card text-center shadow h-100 border-success">
+                        <div class="card-body">
+                            <div class="card-icon text-success">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+
+                            <h5 class="card-title text-dark fw-bold">🍴 Canteen Coupons</h5>
+
+                            <p class="card-text text-muted">
+                                Order food digitally & generate coupon
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Campus Navigation -->
+
             <div class="col-md-4 mb-4">
-                <div class="card text-center shadow h-100 border-secondary opacity-50">
-                    <div class="card-body">
-                        <div class="card-icon text-secondary"><i class="fas fa-map-marked-alt"></i></div>
-                        <h5 class="card-title text-dark fw-bold">🧭 Campus Navigation</h5>
-                        <p class="card-text text-muted">Find your way around campus (Coming Soon)</p>
+                <a href="navigationA/index.php" class="text-decoration-none">
+                    <div class="card text-center shadow h-100 border-success">
+                        <div class="card-body">
+                            <div class="card-icon text-success">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <h5 class="card-title text-dark fw-bold">🧭 Campus Navigation</h5>
+                            <p class="card-text text-muted">Find buildings, classrooms, and routes.</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
+
         </div>
-    </div>
 </body>
 
 
