@@ -2,37 +2,51 @@
 session_start();
 include "../includes/db.php";
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: index.php?mode=file");
-    exit();
+/* ================= AUTO DELETE FILES OLDER THAN 7 DAYS ================= */
 
+$oldFiles = mysqli_query($conn, "
+    SELECT id, file_path 
+    FROM resources 
+    WHERE created_at < NOW() - INTERVAL 7 DAY
+");
+
+while ($f = mysqli_fetch_assoc($oldFiles)) {
+    $file = "uploads/" . $f['file_path'];
+
+    if (file_exists($file)) {
+        unlink($file);   // delete from folder
+    }
+
+    mysqli_query($conn, "DELETE FROM resources WHERE id=" . $f['id']);
 }
 
-if (isset($_GET['id'])) {
+
+/* ================= MANUAL DELETE BY USER ================= */
+
+if (isset($_GET['id']) && isset($_SESSION['user_id'])) {
 
     $id = intval($_GET['id']);
     $userId = $_SESSION['user_id'];
 
-    $check = $conn->prepare("SELECT file_path FROM resources WHERE id=? AND user_id=?");
-    $check->bind_param("ii", $id, $userId);
-    $check->execute();
-    $result = $check->get_result();
+    // Check if file belongs to logged-in user
+    $check = mysqli_query($conn, "
+        SELECT file_path 
+        FROM resources 
+        WHERE id=$id AND user_id=$userId
+    ");
 
-    if ($result->num_rows > 0) {
+    if (mysqli_num_rows($check) > 0) {
 
-        $row = $result->fetch_assoc();
+        $row = mysqli_fetch_assoc($check);
         $file = "uploads/" . $row['file_path'];
 
         if (file_exists($file)) {
-            unlink($file);
+            unlink($file);  // delete file
         }
 
-        $del = $conn->prepare("DELETE FROM resources WHERE id=? AND user_id=?");
-        $del->bind_param("ii", $id, $userId);
-        $del->execute();
+        mysqli_query($conn, "DELETE FROM resources WHERE id=$id");
     }
 }
 
-header("Location: index.php?mode=file&msg=deleted");
+header("Location: index.php");
 exit();
-

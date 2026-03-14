@@ -2,23 +2,45 @@
 session_start();
 include "../includes/db.php";
 
-// protect
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../index.php");
+    header("Location: index.php?mode=question");
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$query_id = $_POST['query_id'];
-$comment = $_POST['comment'];
+$userId = $_SESSION['user_id'];
 
-mysqli_query(
-    $conn,
-    "INSERT INTO comments (query_id, user_id, comment)
-     VALUES ('$query_id', '$user_id', '$comment')"
-);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-header("Location: index.php?mode=question&msg=posted");
-exit();
+    $queryId = intval($_POST['query_id']);
+    $comment = mysqli_real_escape_string($conn, $_POST['comment']);
+    $fileName = NULL;
 
+    /* FILE UPLOAD */
+    if (!empty($_FILES['file']['name'])) {
+
+        $allowed = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'txt', 'ppt', 'pptx'];
+        $ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
+
+        if (in_array($ext, $allowed)) {
+
+            $uploadDir = __DIR__ . "/uploads/comments/";
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $fileName = time() . "_" . basename($_FILES['file']['name']);
+            $targetFile = $uploadDir . $fileName;
+
+            move_uploaded_file($_FILES['file']['tmp_name'], $targetFile);
+        }
+    }
+
+    mysqli_query($conn, "
+        INSERT INTO comments (query_id, comment, file, user_id)
+        VALUES ('$queryId', '$comment', '$fileName', '$userId')
+    ");
+
+    header("Location: index.php?mode=question");
+    exit();
+}
 ?>
