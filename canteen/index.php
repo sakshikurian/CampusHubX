@@ -101,19 +101,19 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
         .floating-cart {
             position: fixed;
             bottom: 25px;
-            right: 25px;
+            left: 25px;
             background: white;
             color: #0d6efd;
             padding: 12px 22px;
-            border-radius: 40px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: bold;
             text-decoration: none;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             z-index: 1000;
         }
 
@@ -123,9 +123,9 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
         }
 
         .cart-badge {
-            background: red;
+            background-color: #0d6efd;
             color: white;
-            font-size: 12px;
+            font-size: 15px;
             padding: 4px 8px;
             border-radius: 50px;
             font-weight: bold;
@@ -190,73 +190,91 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                 <div class="row g-4">
                     <?php while ($row = $result->fetch_assoc()) { ?>
                         <div class="col-md-4 food-item" data-name="<?= strtolower($row['item_name']) ?>">
-                            <div class="card shadow-sm food-card h-100 border-0">
-                                <div class="card-body text-center">
+                            <?php if ($row['status'] == "unavailable") { ?>
 
-                                    <h5 class="fw-bold">
-                                        <?= htmlspecialchars($row['item_name']) ?>
-                                    </h5>
+                                <div class="card shadow-sm food-card h-100 border-0 opacity-50" style="pointer-events:none;">
 
-                                    <h6 class="text-primary fw-bold mb-3">
-                                        ₹<?= number_format($row['price'], 2) ?>
-                                    </h6>
+                                <?php } else { ?>
 
-                                    <form method="POST">
+                                    <div class="card shadow-sm food-card h-100 border-0">
 
-                                        <input type="hidden" name="item" value="<?= htmlspecialchars($row['item_name']) ?>">
+                                    <?php } ?>
+                                    <div class="card-body text-center">
 
-                                        <input type="hidden" name="price" value="<?= $row['price'] ?>">
+                                        <h5 class="fw-bold">
+                                            <?= htmlspecialchars($row['item_name']) ?>
+                                        </h5>
 
-                                        <label class="small text-muted">Qty</label>
+                                        <h6 class="text-primary fw-bold mb-3">
+                                            ₹<?= number_format($row['price'], 2) ?>
+                                        </h6>
 
-                                        <input type="number" id="qty<?= $row['item_id'] ?>" name="qty" value="1" min="1"
-                                            class="form-control text-center rounded-pill mb-2"
-                                            onchange="updatePrice(<?= $row['item_id'] ?>, <?= $row['price'] ?>)">
+                                        <form method="POST">
 
-                                        <small class="text-muted d-block mb-2">
-                                            Total:
-                                            <span id="total<?= $row['item_id'] ?>">
-                                                ₹<?= number_format($row['price'], 2) ?>
-                                            </span>
-                                        </small>
+                                            <input type="hidden" name="item"
+                                                value="<?= htmlspecialchars($row['item_name']) ?>">
 
-                                        <button class="btn btn-primary w-100 rounded-pill fw-semibold">
-                                            🛒 Add to Cart
-                                        </button>
+                                            <input type="hidden" name="price" value="<?= $row['price'] ?>">
 
-                                    </form>
+                                            <label class="small text-muted">Qty</label>
 
+                                            <input type="number" id="qty<?= $row['item_id'] ?>" name="qty" value="1" min="1"
+                                                class="form-control text-center rounded-pill mb-2"
+                                                onchange="updatePrice(<?= $row['item_id'] ?>, <?= $row['price'] ?>)">
+
+                                            <small class="text-muted d-block mb-2">
+                                                Total:
+                                                <span id="total<?= $row['item_id'] ?>">
+                                                    ₹<?= number_format($row['price'], 2) ?>
+                                                </span>
+                                            </small>
+
+                                            <?php if ($row['status'] == "available") { ?>
+
+                                                <button class="btn btn-primary w-100 rounded-pill fw-semibold">
+                                                    🛒 Add to Cart
+                                                </button>
+
+                                            <?php } else { ?>
+
+                                                <button class="btn btn-secondary w-100 rounded-pill" disabled>
+                                                    Out of Stock
+                                                </button>
+
+                                            <?php } ?>
+                                        </form>
+
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    <?php } ?>
-                </div>
+                        <?php } ?>
+                    </div>
 
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- FLOATING CART -->
-    <a href="cart.php" class="floating-cart">
-        🛒 Cart
-        <span class="cart-badge"><?= $cartCount ?></span>
-    </a>
-    <script>
-        document.getElementById("liveSearch").addEventListener("keyup", function () {
-            let value = this.value.toLowerCase();
-            let items = document.querySelectorAll(".food-item");
+        <!-- FLOATING CART -->
+        <a href="cart.php" class="floating-cart">
+            🛒 Cart
+            <span class="cart-badge"><?= $cartCount ?></span>
+        </a>
+        <script>
+            document.getElementById("liveSearch").addEventListener("keyup", function () {
+                let value = this.value.toLowerCase();
+                let items = document.querySelectorAll(".food-item");
 
-            items.forEach(function (item) {
-                let name = item.getAttribute("data-name");
+                items.forEach(function (item) {
+                    let name = item.getAttribute("data-name");
 
-                if (name.includes(value)) {
-                    item.style.display = "block";
-                } else {
-                    item.style.display = "none";
-                }
+                    if (name.includes(value)) {
+                        item.style.display = "block";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
             });
-        });
-    </script>
+        </script>
 
 </body>
 

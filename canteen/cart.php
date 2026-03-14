@@ -1,9 +1,9 @@
 <?php
 session_start();
+include "../includes/db.php";
 
 /* ---------- ADD ITEM TO CART ---------- */
 if (isset($_POST['item'])) {
-
     $item = $_POST['item'];
     $price = $_POST['price'];
     $qty = $_POST['qty'] ?? 1;
@@ -18,11 +18,9 @@ if (isset($_POST['item'])) {
         "qty" => $qty
     ];
 
-    header("Location: cart.php"); // prevent duplicate add on refresh
+    header("Location: cart.php");
     exit();
 }
-
-
 
 /* -------- REMOVE ITEM -------- */
 if (isset($_GET['remove'])) {
@@ -36,7 +34,7 @@ if (isset($_GET['remove'])) {
 /* -------- UPDATE QTY -------- */
 if (isset($_POST['update_qty'])) {
     $index = $_POST['index'];
-    $qty = max(1, (int) $_POST['qty']); // minimum 1
+    $qty = max(1, (int) $_POST['qty']);
     $_SESSION['cart'][$index]['qty'] = $qty;
 }
 
@@ -47,8 +45,25 @@ if (isset($_GET['clear'])) {
     exit();
 }
 
+/* -------- CHECK STOCK STATUS -------- */
+
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $k => $item) {
+
+        $name = $item['item'];
+
+        $res = $conn->query("SELECT status FROM menu WHERE item_name='$name'");
+        $row = $res->fetch_assoc();
+
+        if ($row && $row['status'] == "unavailable") {
+            $_SESSION['cart'][$k]['unavailable'] = true;
+        }
+    }
+}
+
 $cart = $_SESSION['cart'] ?? [];
 $total = 0;
+$blocked = false;
 ?>
 
 <!DOCTYPE html>
@@ -65,24 +80,32 @@ $total = 0;
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3>🛒 Your Cart</h3>
+
             <div>
                 <a href="index.php" class="btn btn-outline-secondary">← Back</a>
+
                 <?php if (!empty($cart)) { ?>
                     <a href="cart.php?clear=1" class="btn btn-outline-danger ms-2">🗑 Clear</a>
                 <?php } ?>
+
             </div>
         </div>
 
+
         <?php if (empty($cart)) { ?>
 
-            <div class="alert alert-warning text-center">Cart is empty 🛒</div>
+            <div class="alert alert-warning text-center">
+                Cart is empty 🛒
+            </div>
 
         <?php } else { ?>
 
             <div class="card shadow-sm">
+
                 <div class="card-body">
 
                     <table class="table table-bordered text-center align-middle">
+
                         <thead class="table-light">
                             <tr>
                                 <th>Item</th>
@@ -94,62 +117,105 @@ $total = 0;
                         </thead>
 
                         <tbody>
+
                             <?php foreach ($cart as $i => $c):
+
                                 $price = $c['price'];
                                 $qty = $c['qty'] ?? 1;
                                 $rowTotal = $price * $qty;
                                 $total += $rowTotal;
+
+                                $isUnavailable = !empty($c['unavailable']);
+
+                                if ($isUnavailable) {
+                                    $blocked = true;
+                                }
+
                                 ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($c['item']) ?></td>
+
+                                <tr class="<?= $isUnavailable ? 'table-secondary' : '' ?>">
+
+                                    <td>
+                                        <?= htmlspecialchars($c['item']) ?>
+
+                                        <?php if ($isUnavailable) { ?>
+                                            <br>
+                                            <span class="badge bg-danger">Out of Stock</span>
+                                        <?php } ?>
+
+                                    </td>
+
                                     <td>₹<?= number_format($price, 2) ?></td>
 
                                     <!-- QTY CONTROL -->
+
                                     <td>
-                                        <form method="POST" class="d-flex justify-content-center align-items-center">
 
-                                            <input type="hidden" name="index" value="<?= $i ?>">
+                                        <?php if ($isUnavailable) { ?>
 
-                                            <!-- MINUS -->
-                                            <button type="submit" name="update_qty" value="1"
-                                                onclick="this.form.qty.value = Math.max(1, parseInt(this.form.qty.value) - 1)"
-                                                class="btn btn-sm btn-outline-secondary">
-                                                −
-                                            </button>
+                                            <span class="text-danger fw-bold">Unavailable</span>
 
-                                            <!-- QTY DISPLAY (NO ARROWS) -->
-                                            <input type="text" name="qty" value="<?= $qty ?>" readonly
-                                                class="form-control text-center mx-2" style="width:50px; font-weight:bold;">
+                                        <?php } else { ?>
 
-                                            <!-- PLUS -->
-                                            <button type="submit" name="update_qty" value="1"
-                                                onclick="this.form.qty.value = parseInt(this.form.qty.value) + 1"
-                                                class="btn btn-sm btn-outline-secondary">
-                                                +
-                                            </button>
+                                            <form method="POST" class="d-flex justify-content-center align-items-center">
 
-                                        </form>
+                                                <input type="hidden" name="index" value="<?= $i ?>">
+
+                                                <button type="submit" name="update_qty"
+                                                    onclick="this.form.qty.value = Math.max(1, parseInt(this.form.qty.value) - 1)"
+                                                    class="btn btn-sm btn-outline-secondary">−</button>
+
+                                                <input type="text" name="qty" value="<?= $qty ?>" readonly
+                                                    class="form-control text-center mx-2" style="width:50px;font-weight:bold;">
+
+                                                <button type="submit" name="update_qty"
+                                                    onclick="this.form.qty.value = parseInt(this.form.qty.value) + 1"
+                                                    class="btn btn-sm btn-outline-secondary">+</button>
+
+                                            </form>
+
+                                        <?php } ?>
+
                                     </td>
-
 
                                     <td>₹<?= number_format($rowTotal, 2) ?></td>
 
                                     <td>
-                                        <a href="cart.php?remove=<?= $i ?>" class="btn btn-sm btn-blue">✖</a>
+                                        <a href="cart.php?remove=<?= $i ?>" class="btn btn-sm btn-danger">✖</a>
                                     </td>
+
                                 </tr>
+
                             <?php endforeach; ?>
+
                         </tbody>
+
                     </table>
 
-                    <div class="text-end mt-3">
-                        <h4>Total Amount: <span class="text-success">₹<?= number_format($total, 2) ?></span></h4>
-                    </div>
 
                     <div class="text-end mt-3">
-                        <a href="generate_bill.php" class="btn btn-success btn-lg">
-                            💳 Proceed to Payment
-                        </a>
+                        <h4>Total Amount:
+                            <span class="text-success">₹<?= number_format($total, 2) ?></span>
+                        </h4>
+                    </div>
+
+
+                    <div class="text-end mt-3">
+
+                        <?php if ($blocked) { ?>
+
+                            <button class="btn btn-secondary btn-lg" disabled>
+                                Remove Out‑of‑Stock Items
+                            </button>
+
+                        <?php } else { ?>
+
+                            <a href="payment.php" class="btn btn-success btn-lg">
+                                💳 Proceed to Payment
+                            </a>
+
+                        <?php } ?>
+
                     </div>
 
                 </div>
