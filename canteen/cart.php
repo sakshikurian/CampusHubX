@@ -181,7 +181,7 @@ $blocked = false;
                                     <td>₹<?= number_format($rowTotal, 2) ?></td>
 
                                     <td>
-                                        <a href="cart.php?remove=<?= $i ?>" class="btn btn-sm btn-danger">✖</a>
+                                        <a href="cart.php?remove=<?= $i ?>" class="btn btn-sm ">✖</a>
                                     </td>
 
                                 </tr>
@@ -210,7 +210,7 @@ $blocked = false;
 
                         <?php } else { ?>
 
-                            <a href="payment.php" class="btn btn-success btn-lg">
+                            <a href="payment.php?amount=<?= $total ?>" class="btn btn-success btn-lg">
                                 💳 Proceed to Payment
                             </a>
 

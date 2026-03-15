@@ -10,16 +10,6 @@ if (!isset($_SESSION['user_id'])) {
 $username = $_SESSION['username'] ?? 'Student';
 
 // Sample location data (hardcoded for UI-only version)
-$locations = [
-    ['name' => 'Main Library', 'icon' => 'fa-book', 'building' => 'Building A', 'description' => 'Study halls and research resources'],
-    ['name' => 'Student Center', 'icon' => 'fa-users', 'building' => 'Building B', 'description' => 'Recreation and student activities'],
-    ['name' => 'Computer Lab', 'icon' => 'fa-laptop', 'building' => 'Building C', 'description' => 'Mac and PC workstations'],
-    ['name' => 'Cafeteria', 'icon' => 'fa-utensils', 'building' => 'Building D', 'description' => 'Dining and food court'],
-    ['name' => 'Admin Office', 'icon' => 'fa-briefcase', 'building' => 'Building E', 'description' => 'Registration and records'],
-    ['name' => 'Sports Complex', 'icon' => 'fa-dumbbell', 'building' => 'Building F', 'description' => 'Gym and athletic facilities'],
-    ['name' => 'Science Block', 'icon' => 'fa-flask', 'building' => 'Building G', 'description' => 'Labs and lecture halls'],
-    ['name' => 'Arts Building', 'icon' => 'fa-palette', 'building' => 'Building H', 'description' => 'Studios and performance spaces']
-];
 ?>
 
 <!DOCTYPE html>
@@ -283,10 +273,10 @@ $locations = [
         <div id="routeResult" class="alert alert-info d-none"></div>
 
         <!-- Map View Button -->
-        <div class="text-center mb-4 map-view-btn">
-
-            <i class=" fas fa-map me-2"></i>View Campus Map
-
+        <div class="text-center mb-4">
+            <a href="campus_map.php" class="map-view-btn">
+                <i class="fas fa-map me-2"></i>View Campus Map
+            </a>
         </div>
 
         <!-- Locations Grid -->

@@ -44,8 +44,6 @@ if (isset($_POST['item'])) {
 $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
 
-$query = "SELECT * FROM menu WHERE 1";
-
 if ($search != "") {
     $query .= " AND item_name LIKE '%$search%'";
 }
@@ -54,7 +52,18 @@ if ($category != "") {
     $query .= " AND category='$category'";
 }
 
-$result = $conn->query($query);
+$result = $conn->query("
+SELECT m.*
+FROM menu m
+LEFT JOIN (
+    SELECT item_name, SUM(qty) as total_orders
+    FROM order_items
+    JOIN orders ON orders.order_id = order_items.order_id
+    WHERE orders.status='approved'
+    GROUP BY item_name
+) o ON m.item_name = o.item_name
+ORDER BY o.total_orders DESC
+");
 
 /* ---------- CART COUNT ---------- */
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
@@ -130,6 +139,19 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             border-radius: 50px;
             font-weight: bold;
         }
+
+        .popular-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #454541;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
     </style>
 
     <script>
@@ -171,6 +193,9 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     <a href="?category=Snacks" class="category-link"> Snacks</a>
                     <a href="?category=Drinks" class="category-link"> Drinks</a>
                     <a href="index.php" class="category-link fw-bold">All</a>
+                    <a href="order_history.php" class="category-link fw-bold">
+                        My Orders
+                    </a>
                 </div>
             </div>
 
@@ -187,23 +212,29 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                 </div>
 
                 <!-- FOOD GRID -->
+
                 <div class="row g-4">
+
+                    <?php $i = 0; ?>
+
                     <?php while ($row = $result->fetch_assoc()) { ?>
+
                         <div class="col-md-4 food-item" data-name="<?= strtolower($row['item_name']) ?>">
+
                             <?php if ($row['status'] == "unavailable") { ?>
-
-                                <div class="card shadow-sm food-card h-100 border-0 opacity-50" style="pointer-events:none;">
-
+                                <div class="card shadow-sm food-card h-100 border-0 opacity-50 position-relative"
+                                    style="pointer-events:none;">
                                 <?php } else { ?>
-
-                                    <div class="card shadow-sm food-card h-100 border-0">
-
+                                    <div class="card shadow-sm food-card h-100 border-0 position-relative">
                                     <?php } ?>
+
+                                    <?php if ($i < 5) { ?>
+                                        <div class="popular-badge"> Popular</div>
+                                    <?php } ?>
+
                                     <div class="card-body text-center">
 
-                                        <h5 class="fw-bold">
-                                            <?= htmlspecialchars($row['item_name']) ?>
-                                        </h5>
+                                        <h5><?= $row['item_name'] ?></h5>
 
                                         <h6 class="text-primary fw-bold mb-3">
                                             ₹<?= number_format($row['price'], 2) ?>
@@ -242,39 +273,42 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                                                 </button>
 
                                             <?php } ?>
+
                                         </form>
 
                                     </div>
                                 </div>
                             </div>
-                        <?php } ?>
-                    </div>
 
+                            <?php $i++; ?>
+
+                        <?php } ?>
+
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- FLOATING CART -->
-        <a href="cart.php" class="floating-cart">
-            🛒 Cart
-            <span class="cart-badge"><?= $cartCount ?></span>
-        </a>
-        <script>
-            document.getElementById("liveSearch").addEventListener("keyup", function () {
-                let value = this.value.toLowerCase();
-                let items = document.querySelectorAll(".food-item");
+            <!-- FLOATING CART -->
+            <a href="cart.php" class="floating-cart">
+                🛒 Cart
+                <span class="cart-badge"><?= $cartCount ?></span>
+            </a>
+            <script>
+                document.getElementById("liveSearch").addEventListener("keyup", function () {
+                    let value = this.value.toLowerCase();
+                    let items = document.querySelectorAll(".food-item");
 
-                items.forEach(function (item) {
-                    let name = item.getAttribute("data-name");
+                    items.forEach(function (item) {
+                        let name = item.getAttribute("data-name");
 
-                    if (name.includes(value)) {
-                        item.style.display = "block";
-                    } else {
-                        item.style.display = "none";
-                    }
+                        if (name.includes(value)) {
+                            item.style.display = "block";
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
                 });
-            });
-        </script>
+            </script>
 
 </body>
 

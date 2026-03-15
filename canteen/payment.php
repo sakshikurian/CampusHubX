@@ -1,8 +1,8 @@
 <?php
 session_start();
-$total = $_SESSION['final_total'] ?? 0;
-include "../includes/db.php";
 
+include "../includes/db.php";
+$total = $_GET['amount'] ?? 0;
 
 
 if (isset($_POST['submit_payment'])) {
@@ -16,17 +16,46 @@ if (isset($_POST['submit_payment'])) {
 
     move_uploaded_file($file['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . "/images/" . $filename);
 
+    /* GET TODAY TOKEN NUMBER */
+
+    $res = $conn->query("
+    SELECT COUNT(*) as total 
+    FROM orders 
+    WHERE DATE(order_date) = CURDATE()
+    ");
+
+    $row = $res->fetch_assoc();
+
+    $token_no = $row['total'] + 1;
     /* INSERT ORDER */
 
     $sql = "INSERT INTO orders 
-(user_id,name,amount,payment_ss,status)
+(user_id,name,amount,payment_ss,status,token_no)
 VALUES 
-('$user_id','$name','$total','$filename','pending')";
+('$user_id','$name','$total','$filename','pending','$token_no')";
 
     if (!$conn->query($sql)) {
         echo "Database Error: " . $conn->error;
     } else {
         echo "Order saved successfully";
+    }
+    $order_id = $conn->insert_id;
+
+    /* SAVE CART ITEMS */
+
+    if (isset($_SESSION['cart'])) {
+
+        foreach ($_SESSION['cart'] as $item) {
+
+            $item_name = $item['item'];
+            $qty = $item['qty'];
+
+            $conn->query("
+            INSERT INTO order_items (order_id,item_name,qty)
+            VALUES ('$order_id','$item_name','$qty')
+            ");
+
+        }
     }
     /* CLEAR CART AFTER ORDER */
 
@@ -50,14 +79,20 @@ VALUES
 </head>
 
 <body style="background:#f4f6f9">
-
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand mb-2 fw-150" href="../canteen/cart.php">
+                ⬅ Back to Cart
+            </a>
+        </div>
+    </nav>
     <div class="container mt-5">
 
         <div class="card shadow p-4 text-center">
 
             <h3 class="mb-4">Scan QR & Pay</h3>
-
-            <img src="flower.jpeg" width="250" class="mb-3">
+            <center><img src="QR.jpeg" width="250" class="mb-3">
+            </center>
 
             <h4 class="text-success mb-4">
                 Amount: ₹<?= number_format($total, 2) ?>

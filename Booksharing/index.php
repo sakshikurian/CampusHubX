@@ -86,7 +86,7 @@ $filter = $_GET['filter'] ?? "all";
 
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="../dashboard.php">CampusHubX</a>
+            <a class="navbar-brand fw-bold" href="../dashboard.php">⬅ CampusHubX</a>
             <span class="text-white">Welcome, <?= htmlspecialchars($userName) ?>!</span>
         </div>
     </nav>
@@ -98,7 +98,7 @@ $filter = $_GET['filter'] ?? "all";
             <div class="card-body">
                 <h5 class="fw-bold mb-3">What would you like to do?</h5>
                 <button class="btn btn-primary me-2" onclick="showMode('question')">💬 Ask a Question</button>
-                <button class="btn btn-success" onclick="showMode('file')">📁 Share a File</button>
+                <button class="btn btn-success" onclick="showMode('file')"> Share a File</button>
             </div>
         </div>
 
@@ -187,11 +187,29 @@ ORDER BY CASE WHEN LOWER(q.category)='sos' THEN 0 ELSE 1 END, q.id DESC
                 <div class="card mb-3 <?= $cardStyle ?>">
                     <div class="card-body">
 
-                        <?php if ($row['user_id'] == $userId) { ?>
-                            <a href="delete_query.php?id=<?= $cid ?>&mode=question"
-                                class="btn btn-outline-primary btn-sm float-end"
-                                onclick="return confirm('Delete this question?')">Delete</a>
-                        <?php } ?>
+                        <div class="dropdown float-end">
+                            <button class="btn btn-sm three-dots" data-bs-toggle="dropdown">⋯</button>
+
+                            <ul class="dropdown-menu dropdown-menu-end">
+
+                                <?php if ($row['user_id'] == $userId) { ?>
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="delete_query.php?id=<?= $cid ?>&mode=question"
+                                            onclick="return confirm('Delete this question?')">
+                                            Delete
+                                        </a>
+                                    </li>
+                                <?php } ?>
+
+                                <li>
+                                    <a class="dropdown-item text-warning" href="report_issue.php?type=post&id=<?= $cid ?>">
+                                        Report Issue
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
 
                         <?php if ($category == "sos") { ?>
                             <div class="text-danger fw-bold mb-1"> EMERGENCY SOS ALERT</div>
@@ -240,10 +258,29 @@ LIMIT 2
                                 <small>💬 <b><?= htmlspecialchars($com['name']) ?>:</b>
                                     <?= htmlspecialchars($com['comment']) ?></small>
 
-                                <?php if ($com['user_id'] == $userId) { ?>
-                                    <a href="delete_comment.php?id=<?= $com['id'] ?>&mode=question"
-                                        class="btn btn-outline-primary btn-sm">Delete</a>
-                                <?php } ?>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm three-dots" data-bs-toggle="dropdown">⋯</button>
+
+                                    <ul class="dropdown-menu dropdown-menu-end">
+
+                                        <?php if ($com['user_id'] == $userId) { ?>
+                                            <li>
+                                                <a class="dropdown-item text-danger"
+                                                    href="delete_comment.php?id=<?= $com['id'] ?>&mode=question">
+                                                    Delete
+                                                </a>
+                                            </li>
+                                        <?php } ?>
+
+                                        <li>
+                                            <a class="dropdown-item text-warning"
+                                                href="report_issue.php?type=comment&id=<?= $com['id'] ?>">
+                                                Report Issue
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
                             </div>
                         <?php } ?>
 
@@ -297,7 +334,7 @@ LIMIT 100 OFFSET 2
             <!-- Upload Card -->
             <div class="card mb-4 shadow-sm">
                 <div class="card-body">
-                    <h5 class="fw-bold">📁 Share Books / Resources</h5>
+                    <h5 class="fw-bold"> Share Books / Resources</h5>
 
                     <form action="post_resource.php" method="POST" enctype="multipart/form-data">
                         <textarea name="description" class="form-control mb-2"
@@ -314,7 +351,7 @@ LIMIT 100 OFFSET 2
             <!-- Resources Table -->
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">📂 Shared Resources</h5>
+                    <h5 class="fw-bold mb-3"> Shared Resources</h5>
 
                     <table class="table table-bordered table-hover align-middle text-center">
                         <thead class="table-primary">
@@ -407,7 +444,12 @@ LIMIT 100 OFFSET 2
                                                             </a>
                                                         </li>
                                                     <?php } ?>
-
+                                                    <li>
+                                                        <a class="dropdown-item text-warning"
+                                                            href="report_issue.php?type=resource&id=<?= $res['id'] ?>">
+                                                            Report Issue
+                                                        </a>
+                                                    </li>
                                                 </ul>
                                             </div>
 
