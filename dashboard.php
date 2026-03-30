@@ -24,6 +24,20 @@ $userName = $_SESSION['user_name'] ?? "User";
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
     <style>
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #ffffff;
+        }
+
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            color: white;
+        }
+
+        .dark-mode .navbar {
+            background-color: #000 !important;
+        }
+
         .card-icon {
             font-size: 5rem;
             margin-bottom: 10px;
@@ -57,12 +71,53 @@ $userName = $_SESSION['user_name'] ?? "User";
             <a class="navbar-brand fw-bold" href="#">CampusHubX</a>
 
             <div class="ms-auto d-flex align-items-center">
+                <!-- DARK MODE BUTTON -->
+                <button id="darkModeToggle" class="btn btn-outline-light me-2">
+                    🌙
+                </button>
+                <div class="dropdown me-2">
+                    <button class="btn btn-outline-light position-relative" data-bs-toggle="dropdown">
+                        🔔
+                        <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
+                            3
+                        </span>
+                    </button>
 
-                <span class="navbar-text me-3">
-                    Welcome, <?= htmlspecialchars($userName); ?>!
-                </span>
+                    <ul class="dropdown-menu dropdown-menu-end p-2"
+                        style="width:300px; max-height:400px; overflow-y:auto;">
 
-                <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>
+                        <!-- Notifications will come here -->
+                        <div id="notifBox">
+                            <li class="dropdown-item text-muted">Loading...</li>
+                        </div>
+
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        👤 Welcome, <?= htmlspecialchars($userName) ?>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+
+                        <li>
+                            <a class="dropdown-item" href="../profile.php">
+                                Profile
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item text-danger" href="logout.php">
+                                Logout
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
 
             </div>
 
@@ -167,7 +222,40 @@ $userName = $_SESSION['user_name'] ?? "User";
         </div>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toggleBtn = document.getElementById("darkModeToggle");
 
+        // load saved mode
+        if (localStorage.getItem("darkMode") === "on") {
+            document.body.classList.add("dark-mode");
+        }
+
+        toggleBtn.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+
+            if (document.body.classList.contains("dark-mode")) {
+                localStorage.setItem("darkMode", "on");
+            } else {
+                localStorage.setItem("darkMode", "off");
+            }
+        });
+    </script>
+    <script>
+        document.querySelector('[data-bs-toggle="dropdown"]').addEventListener("click", () => {
+
+            fetch("fetch_notifications.php")
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById("notifBox").innerHTML = data;
+                })
+                .catch(() => {
+                    document.getElementById("notifBox").innerHTML =
+                        "<li class='dropdown-item text-danger'>Failed to load</li>";
+                });
+
+        });
+    </script>
 </body>
 
 </html>

@@ -192,7 +192,7 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     <a href="?category=Lunch" class="category-link"> Lunch</a>
                     <a href="?category=Snacks" class="category-link"> Snacks</a>
                     <a href="?category=Drinks" class="category-link"> Drinks</a>
-                    <a href="index.php" class="category-link fw-bold">All</a>
+                    <a href="index.php" class="category-link">All</a>
                     <a href="order_history.php" class="category-link fw-bold">
                         My Orders
                     </a>

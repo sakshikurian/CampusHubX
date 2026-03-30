@@ -19,14 +19,13 @@ while ($f = mysqli_fetch_assoc($oldFiles)) {
 
     mysqli_query($conn, "DELETE FROM resources WHERE id=" . $f['id']); // delete from DB
 }
-
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user_id']) && !isset($_SESSION['admin_id'])) {
     header("Location: ../index.php");
     exit();
 }
 
-$userId = $_SESSION['user_id'];
-$userName = $_SESSION['user_name'];
+$userId = $_SESSION['user_id'] ?? null;
+$userName = $_SESSION['admin_name'] ?? $_SESSION['user_name'] ?? "Guest";
 
 $filter = $_GET['filter'] ?? "all";
 ?>
@@ -86,7 +85,15 @@ $filter = $_GET['filter'] ?? "all";
 
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="../dashboard.php">⬅ CampusHubX</a>
+            <?php
+            if (isset($_SESSION['admin_id'])) {
+                $backLink = "../admin/view_reports.php";
+            } else {
+                $backLink = "../dashboard.php";
+            }
+            ?>
+
+            <a class="navbar-brand fw-bold" href="<?= $backLink ?>">⬅ CampusHubX</a>
             <span class="text-white">Welcome, <?= htmlspecialchars($userName) ?>!</span>
         </div>
     </nav>
@@ -104,33 +111,35 @@ $filter = $_GET['filter'] ?? "all";
 
 
         <!-- ================= QUESTION MODE ================= -->
+
         <div id="questionSection">
 
-            <!-- POST QUESTION -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
+            <?php if (isset($_SESSION['user_id'])) { ?>
+                <!-- POST QUESTION -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
 
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="fw-bold mb-0">Post a Question</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="fw-bold mb-0">Post a Question</h5>
 
-                        <select name="category" form="postQueryForm" class="form-select" style="width:200px;">
-                            <option value="general">General</option>
-                            <option value="coding">Coding Queries</option>
-                            <option value="lost">Lost & Found</option>
-                            <option value="sos">SOS</option>
-                        </select>
+                            <select name="category" form="postQueryForm" class="form-select" style="width:200px;">
+                                <option value="general">General</option>
+                                <option value="coding">Coding Queries</option>
+                                <option value="lost">Lost & Found</option>
+                                <option value="sos">SOS</option>
+                            </select>
+                        </div>
+
+                        <form id="postQueryForm" action="post_query.php" method="POST" enctype="multipart/form-data">
+                            <textarea name="question" class="form-control mb-2" placeholder="Ask a question..."
+                                required></textarea>
+                            <input type="file" name="image" class="form-control mb-2" accept=".jpg,.jpeg,.png,.gif,.webp">
+                            <button class="btn btn-primary">Post</button>
+                        </form>
+
                     </div>
-
-                    <form id="postQueryForm" action="post_query.php" method="POST" enctype="multipart/form-data">
-                        <textarea name="question" class="form-control mb-2" placeholder="Ask a question..."
-                            required></textarea>
-                        <input type="file" name="image" class="form-control mb-2" accept=".jpg,.jpeg,.png,.gif,.webp">
-                        <button class="btn btn-primary">Post</button>
-                    </form>
-
                 </div>
-            </div>
-
+            <?php } ?>
 
             <!-- DISCUSSIONS + FILTER -->
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -183,49 +192,59 @@ ORDER BY CASE WHEN LOWER(q.category)='sos' THEN 0 ELSE 1 END, q.id DESC
                 $countRes = mysqli_query($conn, "SELECT COUNT(*) total FROM comments WHERE query_id=$cid");
                 $totalComments = mysqli_fetch_assoc($countRes)['total'];
                 ?>
-
-                <div class="card mb-3 <?= $cardStyle ?>">
+                <div id="post-<?= $cid ?>" class="card mb-3 <?= $cardStyle ?>">
                     <div class="card-body">
 
-                        <div class="dropdown float-end">
-                            <button class="btn btn-sm three-dots" data-bs-toggle="dropdown">⋯</button>
+                        <div class="d-flex justify-content-between align-items-center">
 
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <div>
+                                <p class="mb-1"><?= htmlspecialchars($row['question']) ?></p>
+                                <span class="badge bg-<?= $tagColor ?>"><?= strtoupper($category) ?></span>
+                            </div>
 
-                                <?php if ($row['user_id'] == $userId) { ?>
-                                    <li>
-                                        <a class="dropdown-item text-danger"
-                                            href="delete_query.php?id=<?= $cid ?>&mode=question"
-                                            onclick="return confirm('Delete this question?')">
-                                            Delete
-                                        </a>
-                                    </li>
+                            <!-- FIXED RIGHT SIDE ICONS -->
+                            <div class="d-flex align-items-center gap-2">
+
+                                <?php if (!empty($row['image'])) { ?>
+                                    <a href="uploads/questions/<?= htmlspecialchars($row['image']) ?>" target="_blank"
+                                        style="text-decoration:none; font-size:18px;">
+                                        👁
+                                    </a>
                                 <?php } ?>
 
-                                <li>
-                                    <a class="dropdown-item text-warning" href="report_issue.php?type=post&id=<?= $cid ?>">
-                                        Report Issue
-                                    </a>
-                                </li>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm three-dots" data-bs-toggle="dropdown">⋯</button>
 
-                            </ul>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+
+                                        <?php if ($row['user_id'] == $userId) { ?>
+                                            <li>
+                                                <a class="dropdown-item text-danger"
+                                                    href="delete_query.php?id=<?= $cid ?>&mode=question"
+                                                    onclick="return confirm('Delete this question?')">
+                                                    Delete
+                                                </a>
+                                            </li>
+                                        <?php } ?>
+
+                                        <li>
+                                            <a class="dropdown-item text-warning"
+                                                href="report_issue.php?type=post&id=<?= $cid ?>">
+                                                Report Issue
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+
+                            </div>
+
                         </div>
 
                         <?php if ($category == "sos") { ?>
                             <div class="text-danger fw-bold mb-1"> EMERGENCY SOS ALERT</div>
                         <?php } ?>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <p class="mb-1"><?= htmlspecialchars($row['question']) ?></p>
-                                <span class="badge bg-<?= $tagColor ?>"><?= strtoupper($category) ?></span>
-                            </div>
-
-                            <?php if (!empty($row['image'])) { ?>
-                                <a href="uploads/questions/<?= htmlspecialchars($row['image']) ?>" target="_blank"
-                                    style="text-decoration:none; font-size:18px;">👁</a>
-                            <?php } ?>
-                        </div>
 
                         <small class="text-muted">
                             Posted by <?= htmlspecialchars($row['name']) ?> |
@@ -254,7 +273,7 @@ LIMIT 2
 ");
 
                         while ($com = mysqli_fetch_assoc($c)) { ?>
-                            <div class="d-flex justify-content-between ms-3 mb-1">
+                            <div id="comment-<?= $com['id'] ?>" class="d-flex justify-content-between ms-3 mb-1">
                                 <small>💬 <b><?= htmlspecialchars($com['name']) ?>:</b>
                                     <?= htmlspecialchars($com['comment']) ?></small>
 
@@ -301,7 +320,7 @@ LIMIT 100 OFFSET 2
 ");
 
                                 while ($m = mysqli_fetch_assoc($more)) { ?>
-                                    <div class="d-flex justify-content-between ms-3 mb-1">
+                                    <div id="comment-<?= $m['id'] ?>" class="d-flex justify-content-between ms-3 mb-1">
                                         <small>💬 <b><?= htmlspecialchars($m['name']) ?>:</b>
                                             <?= htmlspecialchars($m['comment']) ?></small>
 
@@ -328,26 +347,29 @@ LIMIT 100 OFFSET 2
         </div>
 
 
+
         <!-- ================= FILE MODE ================= -->
+
         <div id="fileSection" style="display:none;">
 
-            <!-- Upload Card -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="fw-bold"> Share Books / Resources</h5>
+            <?php if (isset($_SESSION['user_id'])) { ?>
+                <!-- Upload Card -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold"> Share Books / Resources</h5>
 
-                    <form action="post_resource.php" method="POST" enctype="multipart/form-data">
-                        <textarea name="description" class="form-control mb-2"
-                            placeholder="Enter description about this resource..." required></textarea>
+                        <form action="post_resource.php" method="POST" enctype="multipart/form-data">
+                            <textarea name="description" class="form-control mb-2"
+                                placeholder="Enter description about this resource..." required></textarea>
 
-                        <input type="file" name="files[]" class="form-control mb-2" multiple required>
-                        <small class="text-muted">You can upload maximum 5 files</small>
+                            <input type="file" name="files[]" class="form-control mb-2" multiple required>
+                            <small class="text-muted">You can upload maximum 5 files</small>
 
-                        <button class="btn btn-success">Upload File</button>
-                    </form>
+                            <button class="btn btn-success">Upload File</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-
+            <?php } ?>
             <!-- Resources Table -->
             <div class="card shadow-sm">
                 <div class="card-body">
@@ -367,11 +389,11 @@ LIMIT 100 OFFSET 2
 
                             <?php
                             $r = mysqli_query($conn, "
-                    SELECT r.*, u.name
-                    FROM resources r
-                    JOIN users u ON r.user_id = u.id
-                    ORDER BY r.id DESC
-                ");
+                           SELECT r.*, u.name
+                           FROM resources r
+                           LEFT JOIN users u ON r.user_id = u.id
+                           ORDER BY r.id DESC
+                           ");
 
                             if (mysqli_num_rows($r) == 0) {
                                 echo '<tr><td colspan="6" class="text-muted">No files uploaded yet 📁</td></tr>';
@@ -396,7 +418,7 @@ LIMIT 100 OFFSET 2
                                 $time = date("h:i A", strtotime($res['created_at'] ?? "now"));
                                 ?>
 
-                                <tr>
+                                <tr id="resource-<?= $res['id'] ?>">
                                     <td class="text-start position-relative resource-title">
 
                                         <div class="d-flex justify-content-between align-items-center">
@@ -490,6 +512,42 @@ LIMIT 100 OFFSET 2
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php
+    $type = $_GET['type'] ?? '';
+    $id = $_GET['id'] ?? '';
+    ?>
+
+    <script>
+
+        let type = "<?= $type ?>";
+        let id = "<?= $id ?>";
+
+        /* OPEN CORRECT SECTION FIRST */
+        if (type === "resource") {
+            document.getElementById("questionSection").style.display = "none";
+            document.getElementById("fileSection").style.display = "block";
+        }
+
+        /* NOW SCROLL TO THE REPORTED CONTENT */
+        if (type && id) {
+
+            let element = document.getElementById(type + "-" + id);
+
+            if (element) {
+
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+                element.style.border = "3px solid red";
+                element.style.backgroundColor = "#ffe6e6";
+
+            }
+
+        }
+
+    </script>
 </body>
 
 </html>

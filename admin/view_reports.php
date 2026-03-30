@@ -42,7 +42,7 @@ if (isset($_GET['delete_type'])) {
     }
 
     /* REMOVE REPORT AFTER ACTION */
-    mysqli_query($conn, "DELETE FROM content_reports WHERE id=$report");
+    mysqli_query($conn, "DELETE FROM content_reports WHERE reference_id=$id AND type='$type'");
 
     header("Location:view_reports.php");
     exit();
@@ -149,10 +149,8 @@ ORDER BY r.id DESC
                             <!-- VIEW EXACT CONTENT -->
 
                             <a class="btn btn-primary btn-sm"
-                                href="../booksharing/index.php?type=<?= $type ?>&id=<?= $ref ?>" target="_blank">
-
+                                href="../booksharing/index.php?type=<?= $row['type'] ?>&id=<?= $row['reference_id'] ?>">
                                 View
-
                             </a>
 
                             <!-- DELETE CONTENT -->
