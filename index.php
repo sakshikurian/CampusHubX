@@ -1,4 +1,7 @@
 <?php
+session_set_cookie_params([
+    'path' => '/'
+]);
 session_start();
 include("includes/db.php");
 
@@ -109,7 +112,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <!-- MESSAGE BOX -->
 
             <div id="approvalMessage">
-                                <?php echo $message; ?>
+                <?php echo $message; ?>
             </div>
 
             <form method="POST">

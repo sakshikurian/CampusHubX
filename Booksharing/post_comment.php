@@ -1,4 +1,7 @@
 <?php
+session_set_cookie_params([
+    'path' => '/'
+]);
 session_start();
 include "../includes/db.php";
 
@@ -39,6 +42,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         INSERT INTO comments (query_id, comment, file, user_id)
         VALUES ('$queryId', '$comment', '$fileName', '$userId')
     ");
+    // 🔥 get comment id
+    $commentId = mysqli_insert_id($conn);
+
+    // 🔥 get post owner
+    $q = mysqli_query($conn, "SELECT user_id FROM queries WHERE id=$queryId");
+    $post = mysqli_fetch_assoc($q);
+
+    $postOwnerId = $post['user_id'];
+
+    if ($postOwnerId != $userId) {
+
+        $message = "💬 Someone replied to your post";
+
+        $link = "http://localhost/campushubx/booksharing/index.php?type=post&id=$queryId&comment_id=$commentId";
+
+        mysqli_query($conn, "
+            INSERT INTO notifications (user_id, message, link)
+            VALUES ($postOwnerId, '$message', '$link')
+        ");
+    }
 
     header("Location: index.php?mode=question");
     exit();

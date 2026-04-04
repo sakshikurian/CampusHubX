@@ -1,4 +1,7 @@
 <?php
+session_set_cookie_params([
+    'path' => '/'
+]);
 session_start();
 include "../includes/db.php";
 
@@ -55,6 +58,122 @@ $filter = $_GET['filter'] ?? "all";
             color: #0d6efd;
             cursor: pointer;
         }
+
+        body.dark-mode {
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
+        }
+
+        /* ===== DARK MODE BASE ===== */
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #ffffff !important;
+        }
+
+        /* ===== GENERAL CARDS ===== */
+        .dark-mode .card {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid #2c2c2c;
+        }
+
+        /* ===== TEXT IMPROVEMENT ===== */
+        .dark-mode p,
+        .dark-mode small {
+            color: #cfcfcf !important;
+        }
+
+        /* ===== INPUT BOX ===== */
+        .dark-mode input,
+        .dark-mode textarea,
+        .dark-mode select {
+            background-color: #2a2a2a !important;
+            color: #ffffff !important;
+            border: 1px solid #444;
+        }
+
+        /* ===== BUTTONS ===== */
+        .dark-mode .btn-primary {
+            background-color: #0d6efd;
+            border: none;
+        }
+
+        .dark-mode .btn-success {
+            background-color: #198754;
+            border: none;
+        }
+
+        /* ===== DISCUSSION CARD ===== */
+        .dark-mode .card.mb-3 {
+            background-color: #5a5656 !important;
+        }
+
+        /* ===== SOS CARD (IMPORTANT FIX 🔥) ===== */
+        .dark-mode .border-danger {
+            background-color: #5a5656 !important;
+            /* softer red */
+            border-color: #ff4d4d !important;
+        }
+
+        /* SOS TEXT */
+        .dark-mode .text-danger {
+            color: #ff6b6b !important;
+        }
+
+        /* ===== COMMENT BOX ===== */
+        .dark-mode input::placeholder,
+        .dark-mode textarea::placeholder {
+            color: #aaa;
+        }
+
+        /* ===== DROPDOWN ===== */
+        .dark-mode .dropdown-menu {
+            background-color: #5a5656;
+            color: white;
+            border: 1px solid #333;
+        }
+
+        .dark-mode .dropdown-item {
+            color: #ddd;
+        }
+
+        .dark-mode .dropdown-item:hover {
+            background-color: #5a5656;
+        }
+
+        /* Fix select dropdown arrow in dark mode */
+        .dark-mode select {
+            background-color: #2a2a2a !important;
+            color: #ffffff !important;
+            border: 1px solid #444;
+
+            /* custom white arrow */
+            background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+        }
+
+        /* Reply button in dark mode */
+        .dark-mode .btn-outline-primary {
+            color: #4dabf7 !important;
+            border-color: #4dabf7 !important;
+        }
+
+        .dark-mode .btn-outline-primary:hover {
+            background-color: #4dabf7 !important;
+            color: #000 !important;
+        }
+
+        /* PAGE TRANSITION */
+        body {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        body.page-loaded {
+            opacity: 1;
+        }
     </style>
     <script>
         function toggleComments(id) {
@@ -84,7 +203,9 @@ $filter = $_GET['filter'] ?? "all";
 <body style="background:#cfe2f3;">
 
     <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+
+            <!-- LEFT SIDE -->
             <?php
             if (isset($_SESSION['admin_id'])) {
                 $backLink = "../admin/view_reports.php";
@@ -92,9 +213,25 @@ $filter = $_GET['filter'] ?? "all";
                 $backLink = "../dashboard.php";
             }
             ?>
-
             <a class="navbar-brand fw-bold" href="<?= $backLink ?>">⬅ CampusHubX</a>
-            <span class="text-white">Welcome, <?= htmlspecialchars($userName) ?>!</span>
+
+            <!-- RIGHT SIDE -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-white">
+                    Welcome,
+                    <?= htmlspecialchars($userName) ?>!
+                </span>
+                <button id="darkModeToggle" class="btn btn-outline-light">
+                    🌙
+                </button>
+                <button class="btn btn-outline-light position-relative" data-bs-toggle="dropdown">
+                    🔔
+                    <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
+                        3
+                    </span>
+                </button>
+            </div>
+
         </div>
     </nav>
 
@@ -515,13 +652,14 @@ LIMIT 100 OFFSET 2
     <?php
     $type = $_GET['type'] ?? '';
     $id = $_GET['id'] ?? '';
+    $commentId = $_GET['comment_id'] ?? '';
     ?>
 
     <script>
 
         let type = "<?= $type ?>";
         let id = "<?= $id ?>";
-
+        let commentId = "<?= $commentId ?>";
         /* OPEN CORRECT SECTION FIRST */
         if (type === "resource") {
             document.getElementById("questionSection").style.display = "none";
@@ -546,7 +684,25 @@ LIMIT 100 OFFSET 2
             }
 
         }
+        if (commentId) {
+            let commentElement = document.getElementById("comment-" + commentId);
 
+            if (commentElement) {
+                commentElement.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+
+                commentElement.style.border = "2px solid blue";
+                commentElement.style.backgroundColor = "#e6f0ff";
+            }
+        }
+    </script>
+    <script src="../js/darkmode.js"></script>
+    <script>
+        window.addEventListener("load", () => {
+            document.body.classList.add("page-loaded");
+        });
     </script>
 </body>
 

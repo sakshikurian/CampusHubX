@@ -185,6 +185,11 @@ $username = $_SESSION['username'] ?? 'Student';
             font-weight: 600;
             margin-left: 10px;
         }
+
+        body.dark-mode {
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 

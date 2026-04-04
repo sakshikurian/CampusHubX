@@ -1,4 +1,7 @@
 <?php
+session_set_cookie_params([
+    'path' => '/'
+]);
 session_start();
 include "../includes/db.php";
 
@@ -56,6 +59,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 INSERT INTO resources (user_id, title, description, file_path)
                     VALUES ($userId, '$title','$description', '$newFileName')
                 ");
+                // 🔥 get inserted resource id
+                $resId = mysqli_insert_id($conn);
+
+                // 🔥 get all users
+                $users = mysqli_query($conn, "SELECT id FROM users");
+
+                while ($u = mysqli_fetch_assoc($users)) {
+
+                    $message = "📁 New resource uploaded: $title";
+
+                    // 🔥 IMPORTANT: link to exact resource
+                    $link = "/campushubx/booksharing/index.php?type=resource&id=$resId";
+                    mysqli_query($conn, "
+        INSERT INTO notifications (user_id, message, link)
+        VALUES ({$u['id']}, '$message', '$link')
+    ");
+                }
             }
         }
 

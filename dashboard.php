@@ -24,18 +24,79 @@ $userName = $_SESSION['user_name'] ?? "User";
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
     <style>
+        .card-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeSlideUp 0.6s ease forwards;
+        }
+
+        /* delay for each card */
+        .card-animate:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .card-animate:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .card-animate:nth-child(3) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeSlideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
         body.dark-mode {
-            background-color: #121212 !important;
-            color: #ffffff;
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
         }
 
+        /* HEADINGS */
+        .dark-mode h1,
+        .dark-mode h2,
+        .dark-mode h3,
+        .dark-mode h4,
+        .dark-mode h5 {
+            color: #ffffff !important;
+        }
+
+        /* PARAGRAPH / TEXT */
+        .dark-mode p,
+        .dark-mode small,
+        .dark-mode span {
+            color: #d1d1d1 !important;
+        }
+
+        /* CARDS */
         .dark-mode .card {
-            background-color: #1e1e1e;
-            color: white;
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid #2c2c2c;
         }
 
+        /* CARD TEXT INSIDE */
+        .dark-mode .card p {
+            color: #e0e0e0 !important;
+        }
+
+        /* BADGES / LABELS */
+        .dark-mode .badge {
+            color: #fff !important;
+        }
+
+        /* NAVBAR */
         .dark-mode .navbar {
             background-color: #000 !important;
+        }
+
+        /* LINKS */
+        .dark-mode a {
+            color: #4dabf7;
         }
 
         .card-icon {
@@ -51,6 +112,11 @@ $userName = $_SESSION['user_name'] ?? "User";
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card:hover {
+            transform: translateY(-5px) scale(1.02);
+            transition: 0.3s ease;
         }
 
         body {
@@ -101,9 +167,7 @@ $userName = $_SESSION['user_name'] ?? "User";
                     <ul class="dropdown-menu dropdown-menu-end">
 
                         <li>
-                            <a class="dropdown-item" href="../profile.php">
-                                Profile
-                            </a>
+                            <a class="dropdown-item" href="profile.php">Profile</a>
                         </li>
 
                         <li>
@@ -137,7 +201,7 @@ $userName = $_SESSION['user_name'] ?? "User";
 
             <!-- Book Sharing -->
 
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 card-animate">
 
                 <a href="booksharing/index.php" class="text-decoration-none">
 
@@ -165,7 +229,7 @@ $userName = $_SESSION['user_name'] ?? "User";
 
             <!-- Canteen Coupons -->
 
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 card-animate">
 
                 <a href="canteen/index.php" class="text-decoration-none">
 
@@ -193,7 +257,7 @@ $userName = $_SESSION['user_name'] ?? "User";
 
             <!-- Campus Navigation -->
 
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 card-animate">
 
                 <a href="navigationA/index.php" class="text-decoration-none">
 

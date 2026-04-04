@@ -152,6 +152,35 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             font-weight: bold;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
+        body.dark-mode {
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
+        }
+
+        /* Only for titles (Categories + My Orders) */
+        .bullet-title {
+            position: relative;
+            padding-left: 15px;
+        }
+
+        /* Bullet only for these */
+        .bullet-title::before {
+            position: absolute;
+            left: 0;
+            color: #0d6efd;
+            font-size: 18px;
+        }
+
+        /* PAGE TRANSITION */
+        body {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        body.page-loaded {
+            opacity: 1;
+        }
     </style>
 
     <script>
@@ -172,11 +201,23 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             </a>
 
             <div class="ms-auto">
-                <span class="text-white">
-                    Welcome, <?= htmlspecialchars($_SESSION['user_name']); ?>!
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-white">
+                        Welcome,
+                        <?= htmlspecialchars($_SESSION['user_name']); ?>!
+                    </span>
+                    <button id="darkModeToggle" class="btn btn-outline-light">
+                        🌙
+                    </button>
+                    <button class="btn btn-outline-light position-relative" data-bs-toggle="dropdown">
+                        🔔
+                        <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
+                            3
+                        </span>
+                    </button>
+
+                </div>
             </div>
-        </div>
     </nav>
 
     <!-- PAGE CONTENT -->
@@ -186,16 +227,15 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             <!-- LEFT SIDEBAR -->
             <div class="col-md-2">
                 <div class="bg-white p-3 rounded-4 shadow-sm">
-                    <h6 class="fw-bold mb-3">Categories</h6>
+                    <h6 class="fw-bold mb-3 text-dark bullet-title">Categories</h6>
 
-                    <a href="?category=Breakfast" class="category-link"> Breakfast</a>
-                    <a href="?category=Lunch" class="category-link"> Lunch</a>
-                    <a href="?category=Snacks" class="category-link"> Snacks</a>
-                    <a href="?category=Drinks" class="category-link"> Drinks</a>
+                    <a href="?category=Breakfast" class="category-link">Breakfast</a>
+                    <a href="?category=Lunch" class="category-link">Lunch</a>
+                    <a href="?category=Snacks" class="category-link">Snacks</a>
+                    <a href="?category=Drinks" class="category-link">Drinks</a>
                     <a href="index.php" class="category-link">All</a>
-                    <a href="order_history.php" class="category-link fw-bold">
-                        My Orders
-                    </a>
+
+                    <a href="order_history.php" class="category-link fw-bold bullet-title">My Orders</a>
                 </div>
             </div>
 
@@ -309,7 +349,12 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     });
                 });
             </script>
-
+            <script src="../js/darkmode.js"></script>
+            <script>
+                window.addEventListener("load", () => {
+                    document.body.classList.add("page-loaded");
+                });
+            </script>
 </body>
 
 </html>

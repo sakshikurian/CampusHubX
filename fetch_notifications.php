@@ -17,9 +17,11 @@ if (mysqli_num_rows($q) == 0) {
 
 while ($row = mysqli_fetch_assoc($q)) {
     echo "
-    <li class='dropdown-item'>
-        " . $row['message'] . "<br>
-        <small class='text-muted'>" . $row['created_at'] . "</small>
-    </li>";
+<li class='dropdown-item'>
+    <a href='{$row['link']}' style='text-decoration:none; color:gray; display:block;'>
+        {$row['message']}<br>
+        <small class='text-muted'>{$row['created_at']}</small>
+    </a>
+</li>";
 }
 ?>
