@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 $_SESSION['item'] = $_POST['item'];
 $_SESSION['amount'] = $_POST['price'];
 ?>

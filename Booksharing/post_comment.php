@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 function ensureCommentReplySupport($conn)
@@ -30,7 +30,10 @@ function renderAjaxCommentHtml($commentId, $queryId, $comment, $userName, $paren
         return '<div class="reply-item p-3" data-comment-id="' . $commentId . '">'
             . '<div class="d-flex justify-content-between align-items-start gap-2">'
             . '<small><strong>' . htmlspecialchars($userName) . ':</strong> ' . htmlspecialchars($comment) . '</small>'
+            . '<div class="d-flex align-items-center gap-2 flex-shrink-0">'
+            . '<button type="button" class="btn btn-outline-warning btn-sm rounded-pill report-trigger" data-report-type="comment" data-report-id="' . $commentId . '">Report Issue</button>'
             . '<a href="delete_comment.php?id=' . $commentId . '&mode=question" class="btn btn-outline-danger btn-sm rounded-pill">Delete</a>'
+            . '</div>'
             . '</div>'
             . '</div>';
     }
@@ -39,6 +42,7 @@ function renderAjaxCommentHtml($commentId, $queryId, $comment, $userName, $paren
         . '<div class="d-flex justify-content-between align-items-start gap-2">'
         . '<small><strong>' . htmlspecialchars($userName) . ':</strong> ' . htmlspecialchars($comment) . '</small>'
         . '<div class="d-flex align-items-center gap-2 flex-shrink-0">'
+        . '<button type="button" class="btn btn-outline-warning btn-sm rounded-pill report-trigger" data-report-type="comment" data-report-id="' . $commentId . '">Report Issue</button>'
         . '<button type="button" class="btn btn-link btn-sm text-decoration-none p-0 reply-toggle">Reply</button>'
         . '<a href="delete_comment.php?id=' . $commentId . '&mode=question" class="btn btn-outline-danger btn-sm rounded-pill">Delete</a>'
         . '</div>'

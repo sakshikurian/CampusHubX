@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'includes/session.php';
 include "includes/db.php";
 
 // Check if the user is logged in
@@ -275,7 +275,7 @@ $userName = $_SESSION['user_name'] ?? "User";
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item text-danger" href="../logout.php">
+                        <a class="dropdown-item text-danger" href="logout.php">
                             Logout
                         </a>
                     </li>

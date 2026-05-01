@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 if (!isset($_SESSION['user_id'])) {
@@ -46,13 +46,14 @@ if (isset($_POST['item'])) {
 /* ---------- FETCH MENU ---------- */
 $search = $_GET['search'] ?? '';
 $category = $_GET['category'] ?? '';
+$where = "WHERE 1";
 
 if ($search != "") {
-    $query .= " AND item_name LIKE '%$search%'";
+    $where .= " AND item_name LIKE '%$search%'";
 }
 
 if ($category != "") {
-    $query .= " AND category='$category'";
+    $where .= " AND category='$category'";
 }
 
 $result = $conn->query("
@@ -65,9 +66,9 @@ LEFT JOIN (
     WHERE orders.status='approved'
     GROUP BY item_name
 ) o ON m.item_name = o.item_name
+$where
 ORDER BY o.total_orders DESC
 ");
-
 /* ---------- CART COUNT ---------- */
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 ?>
@@ -77,242 +78,196 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 
 <head>
      <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
     <title>Canteen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        
+<style>
 html {
     scroll-behavior: smooth;
 }
-        body {
-            background-color: #cfe2f3;
-            overflow-x: hidden;
-            
- padding-top: 110px; 
-        }
-        
+
+body {
+    background-color: #cfe2f3;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* GLOBAL */
 input, button {
     min-height: 45px;
 }
-        :root {
-            --brand: #0f4c81;
-            --brand-dark: #0a2f4f;
-            --brand-soft: #e9f4ff;
-            --accent: #ff9f1c;
-            --success-soft: #e9f8f1;
-            --danger-soft: #ffe8ea;
-            --surface: rgba(255, 255, 255, 0.9);
-            --text-main: #16324f;
-            --text-muted: #5f7488;
-            --border-soft: rgba(15, 76, 129, 0.12);
-            --shadow-soft: 0 18px 40px rgba(15, 76, 129, 0.12);
-        }
-        .category-link {
-            padding: 10px 15px;
-            border-radius: 12px;
-            display: block;
-            margin-bottom: 8px;
-            text-decoration: none;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-        .btn-brand {
-            background: var(--brand);
-            border-color: var(--brand);
-            color: #fff;
-        }
-         .btn-brand:hover {
-            background: #0c3f6b;
-            border-color: #0c3f6b;
-            color: #fff;
-        }
-        .category-sidebar {
-    
 
-    align-self: flex-start;
-    height: fit-content;
-    z-index: 10; /* prevents overlap issues */
-}
-.category-box {
- position: fixed;
-    top: 110px; /* same as navbar */
-    left: 0;
-    width: 16.66%; /* same as col-md-2 */
-    padding-left: 10px;
-    padding-right: 10px;
+:root {
+    --brand: #0f4c81;
+    --brand-dark: #0a2f4f;
 }
 
-        .category-link:hover {
-            background: #0d6efd;
-            color: white;
-            transform: translateX(6px);
-        }
-
- .navbar-shell {
-            background: linear-gradient(120deg, var(--brand-dark), var(--brand));
-            box-shadow: 0 14px 30px rgba(10, 47, 79, 0.24);
-            position: fixed;
+/* NAVBAR */
+.navbar-shell {
+    background: linear-gradient(120deg, var(--brand-dark), var(--brand));
+    box-shadow: 0 14px 30px rgba(10, 47, 79, 0.24);
+    position: sticky;
     top: 0;
     width: 100%;
     z-index: 1000;
-        }
+}
+
+.brand-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.navbar-shell .container {
+    gap: 16px;
+}
+
+.navbar-brand {
+    white-space: normal;
+    line-height: 1.15;
+}
+
+.nav-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.page-shell {
+    padding: 24px 18px 92px;
+}
+
+/* SIDEBAR */
+.category-sidebar {
+    align-self: flex-start;
+    position: sticky;
+    top: 104px;
+}
+
+.category-container {
+    padding: 10px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 14px;
+}
+
+/* CATEGORY LINKS */
+.category-link {
+    padding: 10px 15px;
+    border-radius: 12px;
+    display: block;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: 0.3s;
+}
+
+.category-link:hover {
+    background: #0d6efd;
+    color: white;
+    transform: translateX(6px);
+}
+
+/* FOOD CARDS */
+.food-card {
+    border-radius: 14px;
+    padding: 10px;
+    transition: 0.3s;
+    min-height: 100%;
+}
+
 .food-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
 }
 
-        .floating-cart {
-            position: fixed;
-            bottom: 25px;
-            left: auto;
-            width:auto;
-            right: 25px;
-            background: white;
-            color: #0d6efd;
-            padding: 12px 22px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            text-decoration: none;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease;
-            z-index: 1000;
-        }
-
-        .floating-cart:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-        }
-
-        .cart-badge {
-            background-color: #0d6efd;
-            color: white;
-            font-size: 15px;
-            padding: 4px 8px;
-            border-radius: 50px;
-            font-weight: bold;
-        }
-
-        .popular-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #454541;
-            color: white;
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        body.dark-mode {
-            background-color: #3e3d3d !important;
-            color: #ffffff !important;
-        }
-
-        /* Only for titles (Categories + My Orders) */
-        .bullet-title {
-            position: relative;
-            padding-left: 15px;
-        }
-
-        /* Bullet only for these */
-        .bullet-title::before {
-            position: absolute;
-            left: 0;
-            color: #0d6efd;
-            font-size: 18px;
-        }
-
-        /* PAGE TRANSITION */
-        body {
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out;
-        }
-
-        body.page-loaded {
-            opacity: 1;
-        }
-        @media (max-width: 768px) {
-    .category-link {
-        display: inline-block;
-        margin-right: 10px;
-
-    }
-    .menu-scroll {
-        margin-left: 16.66%;
-    }
-   
-    .category-container {
-        flex-direction: row;
-        overflow-x: auto;
-        gap: 10px;
-        padding-bottom: 5px;
-    }
-
-    .category-container::-webkit-scrollbar {
-        display: none; /* hide scrollbar */
-    }
+/* POPULAR BADGE */
+.popular-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #454541;
+    color: white;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 20px;
 }
-        
-    .category-container {
-       display: flex;
-    flex-direction: column; /* vertical on desktop */
+
+/* CART BUTTON */
+.floating-cart {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: white;
+    color: #0d6efd;
+    padding: 12px 22px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
     gap: 10px;
-    }
-    .food-card {
-         border-radius: 14px;
-    padding: 10px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    
-    }
-
-    .food-card h5 {
-        font-size: 16px;
-    }
-
-    .food-card h6 {
-        font-size: 14px;
-    }
-    
-    
-.row {
-    align-items: flex-start;
+    font-weight: bold;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    text-decoration: none;
 }
 
-.mb-4 {
+.cart-badge {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    display: inline-grid;
+    place-items: center;
+    background: #0d6efd;
+    color: #fff;
+    font-size: 13px;
+}
+
+/* SEARCH BAR */
+.search-wrap {
     position: sticky;
-    top: 90px; /* same as navbar */
+    top: 88px;
     z-index: 10;
-    background: #cfe2f3; /* same as body */
-    padding-top: 5px;
+    background: #cfe2f3;
+    padding-bottom: 12px;
 }
+
+/* SCROLL AREA */
 .menu-scroll {
-    height: calc(100vh - 110px); /* increase this */
-    padding-top: 10px; 
+    max-height: calc(100vh - 178px);
     overflow-y: auto;
-
-    scrollbar-width: none; /* Firefox */
+    padding-bottom: 18px;
 }
-.brand-mark {
-            width: 44px;
-            height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.12);
-            font-size: 1.2rem;
-        }
+
 .menu-scroll::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
+    display: none;
 }
 
+body.dark-mode {
+    background-color: #3e3d3d !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .search-wrap {
+    background: #3e3d3d;
+}
+
+body.dark-mode .category-container,
+body.dark-mode .food-card,
+body.dark-mode .mobile-menu-box {
+    background: #2f2f2f;
+    color: #ffffff;
+}
+
+body.dark-mode .category-link {
+    color: #ffffff;
+}
+
+/* ANIMATION */
 .food-item {
     animation: fadeUp 0.5s ease forwards;
 }
@@ -327,11 +282,116 @@ input, button {
         transform: translateY(0);
     }
 }
-* {
-    -webkit-overflow-scrolling: touch;
-}
-    </style>
 
+/* MOBILE MENU OVERLAY */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    z-index: 2000;
+}
+
+.mobile-menu-box {
+    background: white;
+    margin: 82px 15px 15px;
+    padding: 20px;
+    border-radius: 16px;
+    animation: slideDown 0.25s ease;
+    max-height: calc(100vh - 105px);
+    overflow-y: auto;
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+    .navbar-shell {
+        position: sticky;
+    }
+
+    .navbar-shell .container {
+        align-items: flex-start;
+    }
+
+    .navbar-shell .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .navbar-shell .small {
+        font-size: 0.76rem;
+    }
+
+    .nav-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px !important;
+    }
+
+    .nav-user {
+        flex: 1 1 100%;
+        order: 5;
+        text-align: left !important;
+    }
+
+    .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        font-size: 0.86rem;
+    }
+
+    .category-sidebar {
+        display: none;
+    }
+
+    .page-shell {
+        padding: 16px 12px 92px;
+    }
+
+    .search-wrap {
+        position: static;
+        padding: 8px 0 12px;
+    }
+
+    .menu-scroll {
+        max-height: none;
+        overflow: visible;
+        width: 100%;
+    }
+
+    .food-card {
+        border-radius: 12px;
+    }
+
+    .floating-cart {
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+        justify-content: center;
+        border-radius: 16px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+    .food-grid > .food-item {
+        width: 50%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .food-grid > .food-item {
+        width: 33.333333%;
+    }
+}
+
+</style>
     <script>
         function updatePrice(id, price) {
             let qty = document.getElementById("qty" + id).value;
@@ -357,7 +417,7 @@ input, button {
 
 <body>
    <nav class="navbar navbar-expand-lg navbar-dark navbar-shell py-3">
-        <div class="container">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <div class="brand-mark">DCC</div>
                 <div>
@@ -365,11 +425,14 @@ input, button {
                     <div class="small text-white-50">Add cart, scan Qr code, avoid long queue. </div>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-3 text-white mt-3 mt-lg-0">
+            <div class="d-flex align-items-center gap-3 text-white mt-3 mt-lg-0 nav-actions">
+                <button class="btn btn-outline-light d-md-none" id="menuToggle" type="button" aria-label="Open categories">
+    ⋮
+</button>
                    <button id="darkModeToggle" class="btn btn-outline-light me-2">
                     🌙
                 </button>
-                <div class="text-end">
+                <div class="text-end nav-user">
                     <div class="fw-semibold">Welcome back, <?= htmlspecialchars($userName) ?></div>
                     <div class="small text-white-50">Community learning dashboard</div>
                 </div>
@@ -378,14 +441,27 @@ input, button {
         </div>
     </nav>
 
+<!-- MOBILE CATEGORY MENU -->
+<div id="mobileMenu" class="mobile-menu d-md-none">
+    <div class="mobile-menu-box">
+        <h6 class="fw-bold mb-3">Categories</h6>
 
+        <a href="?category=Breakfast" class="category-link">Breakfast</a>
+        <a href="?category=Lunch" class="category-link">Lunch</a>
+        <a href="?category=Snacks" class="category-link">Snacks</a>
+        <a href="?category=Drinks" class="category-link">Drinks</a>
+        <a href="index.php" class="category-link">All</a>
+
+        <a href="order_history.php" class="category-link fw-bold">My Orders</a>
+    </div>
+</div>
     <!-- PAGE CONTENT -->
-    <div class="container-fluid mt-4">
-        <div class="row">
+    <main class="container-fluid page-shell">
+        <div class="row g-4 align-items-start">
 
             <!-- LEFT SIDEBAR -->
             <div class="col-12 col-md-2 mb-3 category-sidebar">
-    <div class="bg-white p-3 rounded-4 shadow-sm category-box">
+
     <h6 class="fw-bold mb-3 text-dark bullet-title">Categories</h6>
 
     <div class="category-container">
@@ -397,14 +473,13 @@ input, button {
     </div>
 
     <a href="order_history.php" class="category-link fw-bold bullet-title">My Orders</a>
-</div>
             </div>
 
             <!-- RIGHT CONTENT -->
-            <div class="col-md-10">
+            <div class="col-12 col-md-10">
 
                 <!-- SEARCH -->
-                <div class="mb-4">
+                <div class="search-wrap mb-4">
                     <form method="GET">
                         <input type="text" id="liveSearch" name="search" value="<?= htmlspecialchars($search) ?>"
                             class="form-control rounded-pill shadow-sm px-4" placeholder="🔍 Search food..."
@@ -414,7 +489,7 @@ input, button {
 
                 <!-- FOOD GRID -->
 
-                <div class="row g-4 menu-scroll" >
+                <div class="row g-4 menu-scroll food-grid" >
 
                     <?php $i = 0; ?>
 
@@ -488,6 +563,8 @@ input, button {
                     </div>
                 </div>
             </div>
+        </div>
+    </main>
 
             <!-- FLOATING CART -->
             <a href="cart.php" class="floating-cart">
@@ -518,10 +595,15 @@ input, button {
             </script>
             <script>
                 function loadNotifications() {
+                    const notifBox = document.getElementById("notifBox");
+                    if (!notifBox) {
+                        return;
+                    }
+
                     fetch("fetch_notify.php")
                         .then(response => response.text())
                         .then(data => {
-                            document.getElementById("notifBox").innerHTML = data;
+                            notifBox.innerHTML = data;
                         });
                 }
 
@@ -532,6 +614,33 @@ input, button {
                 setInterval(loadNotifications, 5000);
             </script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+
+const toggleBtn = document.getElementById("menuToggle");
+const mobileMenu = document.getElementById("mobileMenu");
+
+// OPEN MENU
+if (toggleBtn && mobileMenu) {
+    toggleBtn.addEventListener("click", () => {
+        mobileMenu.style.display = "block";
+    });
+
+// CLOSE WHEN CLICK OUTSIDE
+    mobileMenu.addEventListener("click", (e) => {
+        if (e.target === mobileMenu) {
+            mobileMenu.style.display = "none";
+        }
+    });
+
+// CLOSE WHEN CLICKING ANY LINK
+    document.querySelectorAll("#mobileMenu a").forEach(link => {
+        link.addEventListener("click", () => {
+            mobileMenu.style.display = "none";
+        });
+    });
+}
+
+</script>
 </body>
 
 </html>

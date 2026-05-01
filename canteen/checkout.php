@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 $total = 0;
 foreach ($_SESSION['cart'] as $c) {
     $total += $c['price'];

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 /* ================= AUTO DELETE FILES OLDER THAN 7 DAYS ================= */

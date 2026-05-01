@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 function ensureCommentReplySupport($conn)
@@ -219,8 +219,20 @@ function renderCommentItem($conn, $commentRow, $userId, $queryId)
     $commentId = (int) $commentRow['id'];
     $html = '<div class="comment-item p-3" data-comment-id="' . $commentId . '">';
     $html .= '<div class="d-flex justify-content-between align-items-start gap-2">';
+    $html .= '<div>';
     $html .= '<small><strong>' . htmlspecialchars($commentRow['name']) . ':</strong> ' . htmlspecialchars($commentRow['comment']) . '</small>';
+    if (!empty($commentRow['file'])) {
+        $file = htmlspecialchars($commentRow['file']);
+        $ext = strtolower(pathinfo($commentRow['file'], PATHINFO_EXTENSION));
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            $html .= '<div class="mt-2"><img src="uploads/comments/' . $file . '" alt="Comment attachment" class="comment-attachment"></div>';
+        } else {
+            $html .= '<div class="mt-2"><a href="uploads/comments/' . $file . '" target="_blank" class="btn btn-soft btn-sm rounded-pill">View Attachment</a></div>';
+        }
+    }
+    $html .= '</div>';
     $html .= '<div class="d-flex align-items-center gap-2 flex-shrink-0">';
+    $html .= '<button type="button" class="btn btn-outline-warning btn-sm rounded-pill report-trigger" data-report-type="comment" data-report-id="' . $commentId . '">Report Issue</button>';
     $html .= '<button type="button" class="btn btn-link btn-sm text-decoration-none p-0 reply-toggle">Reply</button>';
     if ((int) $commentRow['user_id'] === $userId) {
         $html .= '<a href="delete_comment.php?id=' . $commentId . '&mode=question" class="btn btn-outline-danger btn-sm rounded-pill">Delete</a>';
@@ -237,7 +249,7 @@ function renderCommentItem($conn, $commentRow, $userId, $queryId)
     $html .= '</form>';
 
     $replyResult = mysqli_query($conn, "
-        SELECT c.id, c.comment, c.user_id, u.name
+        SELECT c.id, c.comment, c.file, c.user_id, u.name
         FROM comments c
         JOIN users u ON c.user_id=u.id
         WHERE c.query_id=" . (int) $queryId . " AND c.parent_comment_id=$commentId
@@ -249,10 +261,24 @@ function renderCommentItem($conn, $commentRow, $userId, $queryId)
     while ($reply = mysqli_fetch_assoc($replyResult)) {
         $html .= '<div class="reply-item p-3" data-comment-id="' . (int) $reply['id'] . '">';
         $html .= '<div class="d-flex justify-content-between align-items-start gap-2">';
+        $html .= '<div>';
         $html .= '<small><strong>' . htmlspecialchars($reply['name']) . ':</strong> ' . htmlspecialchars($reply['comment']) . '</small>';
+        if (!empty($reply['file'])) {
+            $file = htmlspecialchars($reply['file']);
+            $ext = strtolower(pathinfo($reply['file'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+                $html .= '<div class="mt-2"><img src="uploads/comments/' . $file . '" alt="Reply attachment" class="comment-attachment"></div>';
+            } else {
+                $html .= '<div class="mt-2"><a href="uploads/comments/' . $file . '" target="_blank" class="btn btn-soft btn-sm rounded-pill">View Attachment</a></div>';
+            }
+        }
+        $html .= '</div>';
+        $html .= '<div class="d-flex align-items-center gap-2 flex-shrink-0">';
+        $html .= '<button type="button" class="btn btn-outline-warning btn-sm rounded-pill report-trigger" data-report-type="comment" data-report-id="' . (int) $reply['id'] . '">Report Issue</button>';
         if ((int) $reply['user_id'] === $userId) {
             $html .= '<a href="delete_comment.php?id=' . (int) $reply['id'] . '&mode=question" class="btn btn-outline-danger btn-sm rounded-pill">Delete</a>';
         }
+        $html .= '</div>';
         $html .= '</div>';
         $html .= '</div>';
     }
@@ -497,6 +523,15 @@ if ($filter !== "all") {
             border-radius: 16px;
             background: #f7fbff;
             border: 1px solid rgba(15, 76, 129, 0.08);
+        }
+
+        .comment-attachment,
+        .reported-preview-image {
+            max-width: 220px;
+            max-height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid rgba(15, 76, 129, 0.12);
         }
 
         .comment-replies {
@@ -1069,6 +1104,7 @@ if ($filter !== "all") {
                                         <?php if (!empty($row['image'])) { ?>
                                             <a href="uploads/questions/<?= htmlspecialchars($row['image']) ?>" target="_blank" class="btn btn-soft rounded-pill btn-sm">View Image</a>
                                         <?php } ?>
+                                        <button type="button" class="btn btn-outline-warning rounded-pill btn-sm report-trigger" data-report-type="post" data-report-id="<?= $cid ?>">Report Issue</button>
                                         <?php if ((int) $row['user_id'] === $userId) { ?>
                                             <a href="delete_query.php?id=<?= $cid ?>&mode=question" class="btn btn-outline-danger rounded-pill btn-sm" onclick="return confirm('Delete this question?')">Delete</a>
                                         <?php } ?>
@@ -1094,7 +1130,7 @@ if ($filter !== "all") {
     <div class="comment-list d-grid gap-2">
                                     <?php
                                     $c = mysqli_query($conn, "
-                                        SELECT c.id, c.comment, c.user_id, u.name
+                                        SELECT c.id, c.comment, c.file, c.user_id, u.name
                                         FROM comments c
                                         JOIN users u ON c.user_id=u.id
                                         WHERE c.query_id=$cid AND c.parent_comment_id IS NULL
@@ -1114,7 +1150,7 @@ if ($filter !== "all") {
                                         <div class="d-grid gap-2">
                                             <?php
                                             $more = mysqli_query($conn, "
-                                                SELECT c.id, c.comment, c.user_id, u.name
+                                                SELECT c.id, c.comment, c.file, c.user_id, u.name
                                                 FROM comments c
                                                 JOIN users u ON c.user_id=u.id
                                                 WHERE c.query_id=$cid AND c.parent_comment_id IS NULL
@@ -1242,6 +1278,7 @@ if ($filter !== "all") {
                                                 <div class="d-flex justify-content-end gap-2 flex-wrap">
                                                     <a href="uploads/<?= htmlspecialchars($file) ?>" target="_blank" class="btn btn-soft btn-sm rounded-pill">Open</a>
                                                     <a href="uploads/<?= htmlspecialchars($file) ?>" download class="btn btn-outline-primary btn-sm rounded-pill">Download</a>
+                                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill report-trigger" data-report-type="resource" data-report-id="<?= (int) $res['id'] ?>">Report Issue</button>
                                                     <?php if ((int) $res['user_id'] === $userId) { ?>
                                                         <a href="delete_resource.php?id=<?= (int) $res['id'] ?>" onclick="return confirm('Delete this file?')" class="btn btn-outline-danger btn-sm rounded-pill">Delete</a>
                                                     <?php } ?>
@@ -1260,6 +1297,28 @@ if ($filter !== "all") {
         </div>
     </div>
 
+    <div class="modal fade" id="reportIssueModal" tabindex="-1" aria-labelledby="reportIssueTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="reportIssueForm" action="report_content.php" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportIssueTitle">Report Issue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="type" id="reportType">
+                    <input type="hidden" name="reference_id" id="reportReferenceId">
+                    <label class="form-label fw-semibold" for="reportReason">Reason</label>
+                    <textarea class="form-control" id="reportReason" name="reason" rows="4" maxlength="500" placeholder="Tell admin what is wrong with this content..." required></textarea>
+                    <div class="mini-muted mt-2">Your report will be sent to the admin with the exact post, comment, reply, or resource attached.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-soft rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning rounded-pill submit-btn">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="position-fixed top-0 end-0 p-3 toast-wrap">
         <div id="actionToast" class="toast align-items-center border-0 text-bg-dark" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
@@ -1275,6 +1334,7 @@ if ($filter !== "all") {
     <script>
         const chartPayload = <?= json_encode($chartPayload, JSON_UNESCAPED_SLASHES) ?>;
         const actionToast = new bootstrap.Toast(document.getElementById('actionToast'));
+        const reportIssueModal = new bootstrap.Modal(document.getElementById('reportIssueModal'));
         let activityChart;
         let categoryChart;
 
@@ -1562,6 +1622,46 @@ if ($filter !== "all") {
                 if (!$form.hasClass('d-none')) {
                     $form.find('input[name="comment"]').trigger('focus');
                 }
+            });
+
+            $(document).on('click', '.report-trigger', function() {
+                $('#reportType').val($(this).data('report-type'));
+                $('#reportReferenceId').val($(this).data('report-id'));
+                $('#reportReason').val('');
+                reportIssueModal.show();
+            });
+
+            $('#reportIssueForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = this;
+                const $btn = $(form).find('.submit-btn');
+                const reason = $.trim($('#reportReason').val());
+
+                if (reason.length < 5) {
+                    showToast('Report reason must be at least 5 characters.', true);
+                    return;
+                }
+
+                setButtonLoading($btn, 'Submitting...');
+
+                $.ajax({
+                    url: $(form).attr('action'),
+                    type: 'POST',
+                    data: $(form).serialize(),
+                    dataType: 'json'
+                }).done(function(response) {
+                    if (response.success) {
+                        form.reset();
+                        reportIssueModal.hide();
+                        showToast(response.message || 'Report submitted.');
+                    } else {
+                        showToast(response.message || 'Report failed.', true);
+                    }
+                }).fail(function() {
+                    showToast('Report failed. Please try again.', true);
+                }).always(function() {
+                    resetButton($btn);
+                });
             });
 
             $('#postQueryForm').on('submit', function(e) {

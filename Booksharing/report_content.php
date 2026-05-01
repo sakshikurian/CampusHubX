@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 function isAjaxRequest()
@@ -18,6 +18,22 @@ function sendJson($payload, $statusCode = 200)
     exit();
 }
 
+function ensureContentReportsTable($conn)
+{
+    mysqli_query($conn, "
+        CREATE TABLE IF NOT EXISTS content_reports (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            type VARCHAR(20) NOT NULL,
+            reference_id INT NOT NULL,
+            reason TEXT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_content_report_lookup (type, reference_id),
+            INDEX idx_content_report_user (user_id)
+        )
+    ");
+}
+
 if (!isset($_SESSION["user_id"])) {
     if (isAjaxRequest()) {
         sendJson(["success" => false, "message" => "Please log in first."], 401);
@@ -27,6 +43,7 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $userId = (int) $_SESSION["user_id"];
+ensureContentReportsTable($conn);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $type = mysqli_real_escape_string($conn, trim($_POST["type"] ?? ""));

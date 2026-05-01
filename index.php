@@ -1,9 +1,16 @@
 <?php
-session_set_cookie_params([
-    'path' => '/'
-]);
-session_start();
+require_once 'includes/session.php';
 include("includes/db.php");
+
+if (isset($_SESSION['admin_id'])) {
+    header("Location: admin/dashboard.php");
+    exit();
+}
+
+if (isset($_SESSION['user_id'])) {
+    header("Location: dashboard.php");
+    exit();
+}
 
 $error = "";
 
@@ -107,11 +114,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             min-height: 100vh;
         }
 
-        .hero-panel {
-            color: white;
-            border-radius: 32px;
-            background: linear-gradient(135deg, var(--brand-dark), var(--brand));
-            box-shadow: 0 24px 60px rgba(9, 41, 66, 0.24);
+        .auth-card-col {
+            max-width: 520px;
         }
 
         .form-panel {
@@ -120,13 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             background: var(--soft);
             backdrop-filter: blur(8px);
             box-shadow: 0 24px 60px rgba(15, 76, 129, 0.12);
-        }
-
-        .badge-soft {
-            display: inline-flex;
-            border-radius: 999px;
-            padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.14);
+            width: 100%;
         }
 
         .form-control {
@@ -175,35 +173,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     background: #dc3545;
     color: white;
 }
-#studentContent, #adminContent {
-    transition: all 0.35s ease;
+
+body.dark-mode {
+    color: #ffffff;
+    background: #3e3d3d !important;
 }
 
-.hidden {
-    opacity: 0;
-    transform: translateY(10px);
-    pointer-events: none;
-    position: absolute;
+body.dark-mode .form-panel {
+    background: #1e1e1e;
+    border-color: #2c2c2c;
+    color: #ffffff;
 }
 
-.show {
-    opacity: 1;
-    transform: translateY(0);
-    position: relative;
+body.dark-mode .form-control {
+    background: #2f2f2f;
+    border-color: #444;
+    color: #ffffff;
 }
+
+body.dark-mode .text-muted {
+    color: #cfcfcf !important;
+}
+
 @media (max-width: 992px) {
-   
-    .hero-panel {
-        display: none; /* hide left panel on mobile */
-    }
-
     .form-panel {
         border-radius: 20px;
         padding: 25px !important;
     }
 
     .auth-shell {
-        padding: 20px;
+        padding: 20px 12px;
     }
 
     .btn-group {
@@ -229,65 +228,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         padding: 12px;
         font-size: 16px;
     }
-}
-.toggle-wrapper {
-    display: flex;
-}
 
-.toggle-bg {
-    position: relative;
-    background: rgba(255,255,255,0.15);
-    border-radius: 50px;
-    padding: 5px;
-    display: flex;
-    width: 180px;
-}
-
-.toggle-bg button {
-    flex: 1;
-    border: none;
-    background: transparent;
-    color: white;
-    font-weight: 500;
-    z-index: 2;
-    padding: 6px 0;
-    border-radius: 50px;
-}
-
-.toggle-slider {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 50%;
-    height: calc(100% - 10px);
-    background: white;
-    border-radius: 50px;
-    transition: all 0.35s ease;
-    z-index: 1;
-}
-
-/* active text color */
-.toggle-bg button.active {
-    color: #0f4c81;
+    .form-panel {
+        border-radius: 18px;
+    }
 }
     </style>
 </head>
 <body>
-    <div class="container auth-shell d-flex align-items-center py-4">
-        <div class="row g-4 w-100 align-items-center">
-            <!-- LEFT PANEL -->
-
-
-            <div class="col-lg-6">
+    <div class="container auth-shell d-flex align-items-center justify-content-center py-4">
+        <div class="row g-4 w-100 align-items-center justify-content-center">
+            <div class="col-12 auth-card-col">
                 <div class="form-panel p-4 p-lg-5">
                     <div class="mb-4">
                         <h2 class="fw-bold mb-2">Welcome back</h2>
                         <p class="text-muted mb-0">Use your account to enter the ResourceHub dashboard.</p>
                     </div>
 
-                    <?php if ($error) { ?>
-                        <div class="alert alert-danger rounded-4"><?= htmlspecialchars($error) ?></div>
-                    <?php } ?>
+                    <?= $error ?>
 
                     <form method="POST" novalidate>
                         <div class="mb-3">
@@ -299,23 +257,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <label class="form-label fw-semibold">Password</label>
                             <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
                         </div>
-<div class="mb-3 text-center">
+                        <div class="mb-3 text-center">
 
-                    <label class="form-label fw-semibold">Login As</label>
+                            <label class="form-label fw-semibold">Login As</label>
 
-                    <div class="btn-group w-100" role="group">
+                            <div class="btn-group w-100" role="group">
 
-                        <input type="radio" class="btn-check" name="role" id="student" value="student" checked>
+                                <input type="radio" class="btn-check" name="role" id="student" value="student" checked>
 
-                        <label class="btn btn-outline-primary" for="student">Student</label>
+                                <label class="btn btn-outline-primary" for="student">Student</label>
 
-                        <input type="radio" class="btn-check" name="role" id="admin" value="admin">
+                                <input type="radio" class="btn-check" name="role" id="admin" value="admin">
 
-                        <label class="btn btn-outline-danger" for="admin">Admin</label>
+                                <label class="btn btn-outline-danger" for="admin">Admin</label>
 
-                    </div>
+                            </div>
 
-                </div>
+                        </div>
 
                         <button class="btn btn-primary w-100 py-3 rounded-pill fw-semibold">Sign In</button>
                     </form>
@@ -340,49 +298,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
 
-   <script>
-function showStudent() {
-    const student = document.getElementById("studentContent");
-    const admin = document.getElementById("adminContent");
-
-    student.classList.add("show");
-    student.classList.remove("hidden");
-
-    admin.classList.add("hidden");
-    admin.classList.remove("show");
-
-    document.getElementById("toggleSlider").style.left = "5px";
-
-    document.getElementById("studentTab").classList.add("active");
-    document.getElementById("adminTab").classList.remove("active");
-
-    // sync form
-    document.getElementById("student").checked = true;
-}
-
-function showAdmin() {
-    const student = document.getElementById("studentContent");
-    const admin = document.getElementById("adminContent");
-
-    admin.classList.add("show");
-    admin.classList.remove("hidden");
-
-    student.classList.add("hidden");
-    student.classList.remove("show");
-
-    document.getElementById("toggleSlider").style.left = "50%";
-
-    document.getElementById("adminTab").classList.add("active");
-    document.getElementById("studentTab").classList.remove("active");
-
-    // sync form
-    document.getElementById("admin").checked = true;
-}
-
-// default load
-window.addEventListener("load", () => {
-    showStudent();
-});
-</script>
 </body>
 </html>

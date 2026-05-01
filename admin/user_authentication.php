@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include("../includes/db.php");
 
 /* CHECK ADMIN LOGIN */
@@ -15,6 +15,9 @@ $result = $conn->query("
 SELECT * FROM pending_users
 ORDER BY id DESC
 ");
+
+$approvalMessage = $_SESSION['approval_message'] ?? null;
+unset($_SESSION['approval_message']);
 
 ?>
 
@@ -124,6 +127,12 @@ ORDER BY id DESC
     <div class="container mt-4">
 
         <h3>User Authentication</h3>
+
+        <?php if ($approvalMessage) { ?>
+            <div class="alert alert-<?= htmlspecialchars($approvalMessage['type']) ?> rounded-4">
+                <?= htmlspecialchars($approvalMessage['text']) ?>
+            </div>
+        <?php } ?>
 
         <div class="mb-3">
 

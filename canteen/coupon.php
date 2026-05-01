@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include("../Booksharing/db_connect.php");
 
 $cart = $_SESSION['cart'] ?? [];

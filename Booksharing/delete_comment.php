@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 include "../includes/db.php";
 
 $columnCheck = mysqli_query($conn, "SHOW COLUMNS FROM comments LIKE 'parent_comment_id'");

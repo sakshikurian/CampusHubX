@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once '../includes/session.php';
 require('fpdf/fpdf.php');
 include "../includes/db.php";
 
