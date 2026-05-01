@@ -13,8 +13,8 @@ $userName = $_SESSION['user_name'] ?? "User";
 /* ---------- ADD TO CART ---------- */
 if (isset($_POST['item'])) {
     $item = $_POST['item'];
-    $price = $_POST['price'];
-    $qty = $_POST['qty'] ?? 1;
+    $price = (float) ($_POST['price'] ?? 0);
+    $qty = max(1, (int) ($_POST['qty'] ?? 1));
 
     if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
@@ -24,7 +24,8 @@ if (isset($_POST['item'])) {
 
     foreach ($_SESSION['cart'] as &$cartItem) {
         if ($cartItem['item'] == $item) {
-            $cartItem['qty'] += $qty;
+            $cartItem['qty'] = (int) ($cartItem['qty'] ?? 0) + $qty;
+            $cartItem['price'] = $price;
             $found = true;
             break;
         }
@@ -71,6 +72,8 @@ ORDER BY o.total_orders DESC
 ");
 /* ---------- CART COUNT ---------- */
 $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
+$canteenNotice = $_SESSION['canteen_notice'] ?? '';
+unset($_SESSION['canteen_notice']);
 ?>
 
 <!DOCTYPE html>
@@ -100,6 +103,13 @@ input, button {
 :root {
     --brand: #0f4c81;
     --brand-dark: #0a2f4f;
+    --dark-bg: #101820;
+    --dark-surface: #172633;
+    --dark-surface-2: #203442;
+    --dark-text: #f5fbff;
+    --dark-muted: #b8c7d3;
+    --dark-accent: #ffb703;
+    --dark-border: rgba(255,255,255,0.14);
 }
 
 /* NAVBAR */
@@ -248,23 +258,90 @@ input, button {
 }
 
 body.dark-mode {
-    background-color: #3e3d3d !important;
-    color: #ffffff !important;
+    background:
+        radial-gradient(circle at top left, rgba(255, 183, 3, 0.14), transparent 28%),
+        linear-gradient(145deg, #101820 0%, #15222d 48%, #0d151c 100%) !important;
+    color: var(--dark-text) !important;
+}
+
+body.dark-mode .navbar-shell {
+    background: linear-gradient(120deg, #08111a, #16384c);
+    box-shadow: 0 16px 38px rgba(0,0,0,0.42);
 }
 
 body.dark-mode .search-wrap {
-    background: #3e3d3d;
+    background: transparent;
+}
+
+body.dark-mode #liveSearch,
+body.dark-mode .form-control {
+    background: #f7fbff;
+    color: #10202b;
+    border-color: rgba(255, 183, 3, 0.35);
 }
 
 body.dark-mode .category-container,
-body.dark-mode .food-card,
 body.dark-mode .mobile-menu-box {
-    background: #2f2f2f;
-    color: #ffffff;
+    background: rgba(23, 38, 51, 0.94);
+    border: 1px solid var(--dark-border);
+    box-shadow: 0 18px 42px rgba(0,0,0,0.3);
+}
+
+body.dark-mode .food-card {
+    background: linear-gradient(180deg, var(--dark-surface), var(--dark-surface-2));
+    color: var(--dark-text);
+    border: 1px solid var(--dark-border) !important;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.24);
+}
+
+body.dark-mode .food-card h5,
+body.dark-mode .bullet-title,
+body.dark-mode .text-dark {
+    color: var(--dark-text) !important;
+}
+
+body.dark-mode .food-card .text-primary {
+    color: var(--dark-accent) !important;
+}
+
+body.dark-mode .food-card .text-muted,
+body.dark-mode .small.text-muted {
+    color: var(--dark-muted) !important;
 }
 
 body.dark-mode .category-link {
-    color: #ffffff;
+    color: var(--dark-text);
+}
+
+body.dark-mode .category-link:hover {
+    background: var(--dark-accent);
+    color: #17202a;
+}
+
+body.dark-mode .popular-badge {
+    background: var(--dark-accent);
+    color: #17202a;
+}
+
+body.dark-mode .floating-cart {
+    background: var(--dark-accent);
+    color: #17202a;
+    box-shadow: 0 16px 38px rgba(0,0,0,0.36);
+}
+
+body.dark-mode .cart-badge {
+    background: #172633;
+    color: var(--dark-accent);
+}
+
+body.dark-mode .toast {
+    background: #172633;
+    color: var(--dark-text);
+    border: 1px solid rgba(255,183,3,0.35);
+}
+
+.canteen-toast {
+    z-index: 2100;
 }
 
 /* ANIMATION */
@@ -571,6 +648,19 @@ body.dark-mode .category-link {
                 🛒 Cart
                 <span class="cart-badge"><?= $cartCount ?></span>
             </a>
+            <?php if ($canteenNotice !== '') { ?>
+                <div class="toast-container position-fixed top-0 end-0 p-3 canteen-toast">
+                    <div id="canteenNoticeToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <?= htmlspecialchars($canteenNotice) ?>
+                                <a href="cart.php" class="link-light fw-semibold ms-2">View cart</a>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
             <script>
                 document.getElementById("liveSearch").addEventListener("keyup", function () {
                     let value = this.value.toLowerCase();
@@ -587,7 +677,6 @@ body.dark-mode .category-link {
                     });
                 });
             </script>
-            <script src="../js/darkmode.js"></script>
             <script>
                 window.addEventListener("load", () => {
                     document.body.classList.add("page-loaded");
@@ -615,13 +704,31 @@ body.dark-mode .category-link {
             </script>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
             <script>
+const canteenNoticeToast = document.getElementById("canteenNoticeToast");
+if (canteenNoticeToast) {
+    new bootstrap.Toast(canteenNoticeToast, { delay: 6000 }).show();
+}
 
-const toggleBtn = document.getElementById("menuToggle");
+const darkModeToggleBtn = document.getElementById("darkModeToggle");
+if (localStorage.getItem("darkMode") === "enabled") {
+    document.body.classList.add("dark-mode");
+}
+if (darkModeToggleBtn) {
+    darkModeToggleBtn.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+    darkModeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        const enabled = document.body.classList.contains("dark-mode");
+        localStorage.setItem("darkMode", enabled ? "enabled" : "disabled");
+        darkModeToggleBtn.textContent = enabled ? "☀️" : "🌙";
+    });
+}
+
+const menuToggleBtn = document.getElementById("menuToggle");
 const mobileMenu = document.getElementById("mobileMenu");
 
 // OPEN MENU
-if (toggleBtn && mobileMenu) {
-    toggleBtn.addEventListener("click", () => {
+if (menuToggleBtn && mobileMenu) {
+    menuToggleBtn.addEventListener("click", () => {
         mobileMenu.style.display = "block";
     });
 

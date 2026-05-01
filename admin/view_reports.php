@@ -30,15 +30,10 @@ function h($value)
 
 function renderFilePreview($path, $label)
 {
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
     $safePath = h($path);
     $safeLabel = h($label);
 
-    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
-        return '<a href="' . $safePath . '" target="_blank"><img src="' . $safePath . '" alt="' . $safeLabel . '" class="reported-image"></a>';
-    }
-
-    return '<a href="' . $safePath . '" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">Open ' . $safeLabel . '</a>';
+    return '<a href="' . $safePath . '" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">View ' . $safeLabel . '</a>';
 }
 
 function renderReportedContent($conn, $type, $referenceId)
@@ -122,7 +117,6 @@ function renderReportedContent($conn, $type, $referenceId)
         $html .= '<div class="mb-2">' . h($resource['description'] ?? 'No description added') . '</div>';
         $html .= '<div class="d-flex gap-2 flex-wrap">';
         $html .= renderFilePreview($filePath, 'Resource');
-        $html .= '<a href="' . h($filePath) . '" download class="btn btn-outline-secondary btn-sm rounded-pill">Download Resource</a>';
         $html .= '</div>';
         $html .= '</div>';
 
