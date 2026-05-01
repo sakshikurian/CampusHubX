@@ -151,7 +151,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <style>
         body {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            background: #cfe2f3;
             font-family: 'Poppins', sans-serif;
         }
 
@@ -166,13 +166,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border: none;
             border-radius: 15px;
             box-shadow: 0 20px 20px rgba(0, 0, 0, 0.1);
-            background-color: #e6eff9ff;
+            background-color: #ffffff;
+        }
+
+        /* DARK MODE */
+        body.dark-mode {
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
+        }
+
+        .dark-mode .card {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid #2c2c2c;
+        }
+
+        /* PAGE TRANSITION */
+        body {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        body.page-loaded {
+            opacity: 1;
         }
     </style>
 
 </head>
 
 <body>
+
+    <!-- DARK MODE BUTTON -->
+    <button id="darkModeToggle" class="btn btn-outline-primary position-fixed top-0 end-0 m-3" style="z-index: 1000;">
+        🌙
+    </button>
 
     <div class="register-container">
 
@@ -247,6 +274,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
     </div>
+
+    <script>
+        // DARK MODE TOGGLE
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️';
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                darkModeToggle.textContent = '🌙';
+            }
+        });
+
+        // Page transition
+        window.addEventListener('load', () => {
+            body.classList.add('page-loaded');
+        });
+    </script>
 
 </body>
 

@@ -6,6 +6,9 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../index.php");
     exit();
 }
+$userId = $_SESSION['user_id'] ?? 0;
+$userName = $_SESSION['user_name'] ?? "User";
+
 
 /* ---------- ADD TO CART ---------- */
 if (isset($_POST['item'])) {
@@ -73,14 +76,38 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 <html>
 
 <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Canteen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        
+html {
+    scroll-behavior: smooth;
+}
         body {
             background-color: #cfe2f3;
+            overflow-x: hidden;
+            
+ padding-top: 110px; 
         }
-
+        
+input, button {
+    min-height: 45px;
+}
+        :root {
+            --brand: #0f4c81;
+            --brand-dark: #0a2f4f;
+            --brand-soft: #e9f4ff;
+            --accent: #ff9f1c;
+            --success-soft: #e9f8f1;
+            --danger-soft: #ffe8ea;
+            --surface: rgba(255, 255, 255, 0.9);
+            --text-main: #16324f;
+            --text-muted: #5f7488;
+            --border-soft: rgba(15, 76, 129, 0.12);
+            --shadow-soft: 0 18px 40px rgba(15, 76, 129, 0.12);
+        }
         .category-link {
             padding: 10px 15px;
             border-radius: 12px;
@@ -90,6 +117,31 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             color: #333;
             transition: all 0.3s ease;
         }
+        .btn-brand {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+         .btn-brand:hover {
+            background: #0c3f6b;
+            border-color: #0c3f6b;
+            color: #fff;
+        }
+        .category-sidebar {
+    
+
+    align-self: flex-start;
+    height: fit-content;
+    z-index: 10; /* prevents overlap issues */
+}
+.category-box {
+ position: fixed;
+    top: 110px; /* same as navbar */
+    left: 0;
+    width: 16.66%; /* same as col-md-2 */
+    padding-left: 10px;
+    padding-right: 10px;
+}
 
         .category-link:hover {
             background: #0d6efd;
@@ -97,20 +149,25 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             transform: translateX(6px);
         }
 
-        .food-card {
-            border-radius: 18px;
-            transition: all 0.3s ease;
+ .navbar-shell {
+            background: linear-gradient(120deg, var(--brand-dark), var(--brand));
+            box-shadow: 0 14px 30px rgba(10, 47, 79, 0.24);
+            position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
         }
-
-        .food-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-        }
+.food-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
 
         .floating-cart {
             position: fixed;
             bottom: 25px;
-            left: 25px;
+            left: auto;
+            width:auto;
+            right: 25px;
             background: white;
             color: #0d6efd;
             padding: 12px 22px;
@@ -181,6 +238,98 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
         body.page-loaded {
             opacity: 1;
         }
+        @media (max-width: 768px) {
+    .category-link {
+        display: inline-block;
+        margin-right: 10px;
+
+    }
+    .menu-scroll {
+        margin-left: 16.66%;
+    }
+   
+    .category-container {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 10px;
+        padding-bottom: 5px;
+    }
+
+    .category-container::-webkit-scrollbar {
+        display: none; /* hide scrollbar */
+    }
+}
+        
+    .category-container {
+       display: flex;
+    flex-direction: column; /* vertical on desktop */
+    gap: 10px;
+    }
+    .food-card {
+         border-radius: 14px;
+    padding: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    }
+
+    .food-card h5 {
+        font-size: 16px;
+    }
+
+    .food-card h6 {
+        font-size: 14px;
+    }
+    
+    
+.row {
+    align-items: flex-start;
+}
+
+.mb-4 {
+    position: sticky;
+    top: 90px; /* same as navbar */
+    z-index: 10;
+    background: #cfe2f3; /* same as body */
+    padding-top: 5px;
+}
+.menu-scroll {
+    height: calc(100vh - 110px); /* increase this */
+    padding-top: 10px; 
+    overflow-y: auto;
+
+    scrollbar-width: none; /* Firefox */
+}
+.brand-mark {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 1.2rem;
+        }
+.menu-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+}
+
+.food-item {
+    animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+* {
+    -webkit-overflow-scrolling: touch;
+}
     </style>
 
     <script>
@@ -188,55 +337,67 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
             let qty = document.getElementById("qty" + id).value;
             document.getElementById("total" + id).innerText = "₹" + (price * qty);
         }
+
+        
     </script>
+    <script>window.addEventListener("scroll", () => {
+    document.querySelectorAll(".food-card").forEach(card => {
+        let rect = card.getBoundingClientRect();
+
+        if (rect.top < window.innerHeight - 50) {
+            card.style.transform = "translateY(0)";
+            card.style.opacity = "1";
+        } else {
+            card.style.transform = "translateY(40px)";
+            card.style.opacity = "0.5";
+        }
+    });
+});</script>
 </head>
 
 <body>
-
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="../dashboard.php">
-                ⬅ CampusHubX
-            </a>
-
-            <div class="ms-auto">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="text-white">
-                        Welcome,
-                        <?= htmlspecialchars($_SESSION['user_name']); ?>!
-                    </span>
-                    <button id="darkModeToggle" class="btn btn-outline-light">
-                        🌙
-                    </button>
-                    <button class="btn btn-outline-light position-relative" data-bs-toggle="dropdown">
-                        🔔
-                        <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
-                            3
-                        </span>
-                    </button>
-
+   <nav class="navbar navbar-expand-lg navbar-dark navbar-shell py-3">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-mark">DCC</div>
+                <div>
+                    <a class="navbar-brand fw-bold mb-0" href="../dashboard.php">Digital Canteen Coupon</a>
+                    <div class="small text-white-50">Add cart, scan Qr code, avoid long queue. </div>
                 </div>
             </div>
+            <div class="d-flex align-items-center gap-3 text-white mt-3 mt-lg-0">
+                   <button id="darkModeToggle" class="btn btn-outline-light me-2">
+                    🌙
+                </button>
+                <div class="text-end">
+                    <div class="fw-semibold">Welcome back, <?= htmlspecialchars($userName) ?></div>
+                    <div class="small text-white-50">Community learning dashboard</div>
+                </div>
+                <a href="../logout.php" class="btn btn-outline-light btn-sm rounded-pill px-3">Logout</a>
+            </div>
+        </div>
     </nav>
+
 
     <!-- PAGE CONTENT -->
     <div class="container-fluid mt-4">
         <div class="row">
 
             <!-- LEFT SIDEBAR -->
-            <div class="col-md-2">
-                <div class="bg-white p-3 rounded-4 shadow-sm">
-                    <h6 class="fw-bold mb-3 text-dark bullet-title">Categories</h6>
+            <div class="col-12 col-md-2 mb-3 category-sidebar">
+    <div class="bg-white p-3 rounded-4 shadow-sm category-box">
+    <h6 class="fw-bold mb-3 text-dark bullet-title">Categories</h6>
 
-                    <a href="?category=Breakfast" class="category-link">Breakfast</a>
-                    <a href="?category=Lunch" class="category-link">Lunch</a>
-                    <a href="?category=Snacks" class="category-link">Snacks</a>
-                    <a href="?category=Drinks" class="category-link">Drinks</a>
-                    <a href="index.php" class="category-link">All</a>
+    <div class="category-container">
+        <a href="?category=Breakfast" class="category-link">Breakfast</a>
+        <a href="?category=Lunch" class="category-link">Lunch</a>
+        <a href="?category=Snacks" class="category-link">Snacks</a>
+        <a href="?category=Drinks" class="category-link">Drinks</a>
+        <a href="index.php" class="category-link">All</a>
+    </div>
 
-                    <a href="order_history.php" class="category-link fw-bold bullet-title">My Orders</a>
-                </div>
+    <a href="order_history.php" class="category-link fw-bold bullet-title">My Orders</a>
+</div>
             </div>
 
             <!-- RIGHT CONTENT -->
@@ -253,13 +414,13 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
 
                 <!-- FOOD GRID -->
 
-                <div class="row g-4">
+                <div class="row g-4 menu-scroll" >
 
                     <?php $i = 0; ?>
 
                     <?php while ($row = $result->fetch_assoc()) { ?>
 
-                        <div class="col-md-4 food-item" data-name="<?= strtolower($row['item_name']) ?>">
+                        <div class="col-12 col-sm-6 col-md-4 food-item" data-name="<?= strtolower($row['item_name']) ?>">
 
                             <?php if ($row['status'] == "unavailable") { ?>
                                 <div class="card shadow-sm food-card h-100 border-0 opacity-50 position-relative"
@@ -355,6 +516,22 @@ $cartCount = isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0;
                     document.body.classList.add("page-loaded");
                 });
             </script>
+            <script>
+                function loadNotifications() {
+                    fetch("fetch_notify.php")
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById("notifBox").innerHTML = data;
+                        });
+                }
+
+                // load once
+                loadNotifications();
+
+                // auto refresh every 5 seconds
+                setInterval(loadNotifications, 5000);
+            </script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

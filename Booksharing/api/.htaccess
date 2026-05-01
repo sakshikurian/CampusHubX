@@ -1,0 +1,65 @@
+# BookSharing API Security Configuration
+# Place this file in the /api/ directory
+
+# Enable mod_rewrite for security rules
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /booksharing/api/
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Disable script execution except PHP
+<FilesMatch "\.(js|css|jpg|jpeg|png|gif|ico|txt|pdf)$">
+    Allow from all
+</FilesMatch>
+
+# Prevent access to sensitive files
+<FilesMatch "\.(ini|conf|sql|db|log|lock|md|yml|yaml)$">
+    Deny from all
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking attacks
+    Header always set X-Frame-Options "DENY"
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Disable caching for API responses
+    Header always set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+</IfModule>
+
+# PHP configuration
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_flag expose_php Off
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_flag expose_php Off
+</IfModule>
+
+# Prevent directory traversal and common attacks
+<IfModule mod_rewrite.c>
+    # Block suspicious patterns
+    RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} UNION.*SELECT [NC,OR]
+    RewriteCond %{QUERY_STRING} union.*all.*select [NC,OR]
+    RewriteCond %{QUERY_STRING} concat.*\( [NC]
+    RewriteRule ^(.*)$ - [F,L]
+</IfModule>
+

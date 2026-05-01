@@ -29,32 +29,96 @@ ORDER BY id DESC
 
     <style>
         body {
-            background: #f4f6f9;
+            background: #cfe2f3;
             font-family: 'Poppins', sans-serif;
         }
+:root {
+            --brand: #0f4c81;
+            --brand-dark: #0a2f4f;
+            --brand-soft: #e9f4ff;
+            --accent: #ff9f1c;
+            --success-soft: #e9f8f1;
+            --danger-soft: #ffe8ea;
+            --surface: rgba(255, 255, 255, 0.9);
+            --text-main: #16324f;
+            --text-muted: #5f7488;
+            --border-soft: rgba(15, 76, 129, 0.12);
+            --shadow-soft: 0 18px 40px rgba(15, 76, 129, 0.12);
+        }
+        .navbar-shell {
+            background: linear-gradient(120deg, var(--brand-dark), var(--brand));
+            box-shadow: 0 14px 30px rgba(10, 47, 79, 0.24);
+        }
 
+        .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            font-size: 1.2rem;
+        }
         .card {
             border-radius: 12px;
+        }
+
+        /* DARK MODE */
+        body.dark-mode {
+            background-color: #3e3d3d !important;
+            color: #ffffff !important;
+        }
+
+        .dark-mode .card {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid #2c2c2c;
+        }
+
+        .dark-mode .table {
+            color: #ffffff !important;
+        }
+
+        .dark-mode .navbar {
+            background-color: #000 !important;
+        }
+
+        .dark-mode a {
+            color: #4dabf7;
+        }
+
+        /* PAGE TRANSITION */
+        body {
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        body.page-loaded {
+            opacity: 1;
         }
     </style>
 
 </head>
 
 <body>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-shell py-3">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-mark">UA</div>
+                <div>
+                    <a class="navbar-brand fw-bold mb-0" href="dashboard.php">User Authentication</a>
+                    <div class="small text-white-50">Manage pending user accounts</div>
+                </div>
+            </div>
 
-    <nav class="navbar navbar-dark bg-dark">
-
-        <div class="container-fluid">
-
-            <span class="navbar-brand">
-
-                <a href="dashboard.php" class="btn text-light"> ⬅️ Admin Dashboard</a>
-            </span>
-
-
-
+            <div class="d-flex align-items-center gap-3 text-white mt-3 mt-lg-0">
+                <button id="darkModeToggle" class="btn btn-outline-light me-2">
+                    🌙
+                </button>
+                
+            </div>
         </div>
-
     </nav>
 
     <div class="container mt-4">
@@ -126,6 +190,34 @@ ORDER BY id DESC
         </div>
 
     </div>
+
+    <script>
+        // DARK MODE TOGGLE
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️';
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('darkMode', 'enabled');
+                darkModeToggle.textContent = '☀️';
+            } else {
+                localStorage.setItem('darkMode', 'disabled');
+                darkModeToggle.textContent = '🌙';
+            }
+        });
+
+        // Page transition
+        window.addEventListener('load', () => {
+            body.classList.add('page-loaded');
+        });
+    </script>
 
 </body>
 

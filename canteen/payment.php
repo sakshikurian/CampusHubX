@@ -80,11 +80,21 @@ VALUES
 
 <body style="background:#f4f6f9">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+
         <div class="container-fluid">
-            <a class="navbar-brand mb-2 fw-150" href="../canteen/cart.php">
-                ⬅ Back to Cart
-            </a>
+
+            <a class="navbar-brand fw-bold" href="../canteen/cart.php"> ⬅️ Back to Cart</a>
+
+            <div class="ms-auto d-flex align-items-center">
+                <!-- DARK MODE BUTTON -->
+                <button id="darkModeToggle" class="btn btn-outline-light me-2">
+                    🌙
+                </button>
+
+            </div>
+
         </div>
+
     </nav>
     <div class="container mt-5">
 

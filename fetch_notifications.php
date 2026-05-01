@@ -16,12 +16,29 @@ if (mysqli_num_rows($q) == 0) {
 }
 
 while ($row = mysqli_fetch_assoc($q)) {
-    echo "
-<li class='dropdown-item'>
-    <a href='{$row['link']}' style='text-decoration:none; color:gray; display:block;'>
-        {$row['message']}<br>
-        <small class='text-muted'>{$row['created_at']}</small>
+
+    $style = ($row['is_read'] == 0)
+        ? "font-weight:bold; color:#000;"
+        : "color:#666;";
+
+    echo "<li class='dropdown-item'>
+    
+    <a href='../campushubx/mark_read.php?id={$row['id']}&link=" . urlencode($row['link']) . "'
+    style='
+        display:block;
+        padding:8px;
+        margin-bottom:5px;
+        border-radius:8px;
+        text-decoration:none;
+        $style
+    '>
+
+        {$row['message']}
+        <br>
+        <small>{$row['created_at']}</small>
+
     </a>
-</li>";
+
+    </li>";
 }
 ?>
