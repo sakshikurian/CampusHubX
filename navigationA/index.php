@@ -203,7 +203,7 @@ $locations = [
     <nav class="navbar navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="../dashboard.php">
-                CampusHubX
+                ⬅️ CampusHubX
             </a>
             <div class="d-flex align-items-center">
                 <span class="text-white me-3">Welcome,
@@ -238,6 +238,49 @@ $locations = [
                 <span class="coming-soon-badge">DATABASE COMING SOON</span>
             </small>
         </div>
+        <div class="card shadow-sm p-4 mb-4">
+            <h5 class="fw-bold mb-3">Find Route</h5>
+
+            <div class="row g-3">
+
+                <!-- SOURCE -->
+                <div class="col-md-5">
+                    <label class="form-label">From (Source)</label>
+                    <select class="form-select" id="source">
+                        <option value="">Select Starting Point</option>
+                        <option>Main Library</option>
+                        <option>Student Center</option>
+                        <option>Computer Lab</option>
+                        <option>Auditorium</option>
+                        <option>Cafeteria</option>
+                    </select>
+                </div>
+
+                <!-- DESTINATION -->
+                <div class="col-md-5">
+                    <label class="form-label">To (Destination)</label>
+                    <select class="form-select" id="destination">
+                        <option value="">Select Destination</option>
+                        <option>Main Library</option>
+                        <option>Student Center</option>
+                        <option>Computer Lab</option>
+                        <option>Auditorium</option>
+                        <option>Cafeteria</option>
+                    </select>
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="findRoute()">
+                        🔄 Find
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RESULT -->
+        <div id="routeResult" class="alert alert-info d-none"></div>
 
         <!-- Map View Button -->
         <div class="text-center mb-4 map-view-btn">
@@ -303,6 +346,29 @@ $locations = [
             }
         }
     </script>
+    <script>
+        function findRoute() {
+            let source = document.getElementById("source").value;
+            let destination = document.getElementById("destination").value;
+            let resultBox = document.getElementById("routeResult");
+
+            if (!source || !destination) {
+                alert("Please select both source and destination.");
+                return;
+            }
+
+            if (source === destination) {
+                alert("Source and destination cannot be same.");
+                return;
+            }
+
+            resultBox.classList.remove("d-none");
+            resultBox.innerHTML =
+                "Route from <b>" + source + "</b> to <b>" + destination + "</b>.<br>" +
+                "Estimated walking time: 5-10 minutes.";
+        }
+    </script>
+
 </body>
 
 </html>

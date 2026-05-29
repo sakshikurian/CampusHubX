@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($conn->real_escape_string($_POST['email']));
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
-
+    $role = $_POST['role'];
     // 1️⃣ Basic field validation
     if (empty($name) || empty($email) || empty($password) || empty($confirm_password)) {
         $message = "<div class='alert alert-danger'>All fields are required!</div>";
@@ -104,6 +104,7 @@ $conn->close();
 
             <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"
                 onsubmit="return validateForm()">
+
                 <div class="mb-3">
                     <label for="name" class="form-label">Full Name</label>
                     <input type="text" class="form-control" id="name" name="name" required autocomplete="off">

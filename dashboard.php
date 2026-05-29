@@ -45,7 +45,7 @@ $userName = $_SESSION['user_name'];
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">CampusHubX</a>
+            <a class="navbar-brand fw-bold" href="#"> CampusHubX</a>
             <div class="ms-auto d-flex align-items-center">
                 <span class="navbar-text me-3">Welcome, <?= htmlspecialchars($userName); ?>!</span>
                 <a href="logout.php" class="btn btn-outline-light btn-sm">Logout</a>

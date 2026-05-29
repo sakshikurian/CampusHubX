@@ -147,7 +147,7 @@ $total = 0;
                     </div>
 
                     <div class="text-end mt-3">
-                        <a href="checkout.php" class="btn btn-success btn-lg">
+                        <a href="generate_bill.php" class="btn btn-success btn-lg">
                             💳 Proceed to Payment
                         </a>
                     </div>
