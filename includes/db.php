@@ -2,8 +2,8 @@
 $servername = "localhost";
 $username = "root";
 $password = "";     // IMPORTANT: Leave blank unless you set a root password
-$database = "campushubx";
-$port = 3308;       // ADDED THE PORT NUMBER
+$database = "campushubx2";
+$port = 3306;       // ADDED THE PORT NUMBER
 
 // Create connection
 // Note: Port is added as the 5th parameter
